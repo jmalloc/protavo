@@ -9,9 +9,9 @@ import (
 
 // opFind is an operation that finds a single document by a unique key.
 type opFind struct {
-	UniqueKey  string
-	Constraint []string
-	Document   *Document
+	UniqueKey string
+	Filter    []string
+	Document  *Document
 }
 
 func (op *opFind) View(ctx context.Context, tx *bolt.Tx) (bool, error) {
@@ -36,7 +36,7 @@ func (op *opFind) View(ctx context.Context, tx *bolt.Tx) (bool, error) {
 			return false, err
 		}
 
-		if !matchesConstraint(md, op.Constraint) {
+		if !matchesFilter(md, op.Filter) {
 			return false, nil
 		}
 

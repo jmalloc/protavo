@@ -6,14 +6,14 @@ import (
 	bolt "github.com/coreos/bbolt"
 )
 
-// ExclusiveDriver is an implementation of Driver that uses a single *bolt.DB over
+// exclusiveDriver is an implementation of Driver that uses a single *bolt.DB over
 // its entire lifetime, preventing other processes from opening the database.
-type ExclusiveDriver struct {
+type exclusiveDriver struct {
 	Database *bolt.DB
 }
 
 // View executes a read-only operation.
-func (d *ExclusiveDriver) View(ctx context.Context, op ViewOp) (bool, error) {
+func (d *exclusiveDriver) View(ctx context.Context, op viewOp) (bool, error) {
 	var ok bool
 
 	return ok, d.Database.View(func(tx *bolt.Tx) error {
@@ -24,13 +24,13 @@ func (d *ExclusiveDriver) View(ctx context.Context, op ViewOp) (bool, error) {
 }
 
 // Update executes a read/write operation.
-func (d *ExclusiveDriver) Update(ctx context.Context, op UpdateOp) error {
+func (d *exclusiveDriver) Update(ctx context.Context, op updateOp) error {
 	return d.Database.Update(func(tx *bolt.Tx) error {
 		return op.Update(ctx, tx)
 	})
 }
 
 // Close closes the database.
-func (d *ExclusiveDriver) Close() error {
+func (d *exclusiveDriver) Close() error {
 	return d.Database.Close()
 }

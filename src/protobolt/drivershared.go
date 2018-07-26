@@ -10,10 +10,10 @@ import (
 	bolt "github.com/coreos/bbolt"
 )
 
-// SharedDriver is an implementation of Driver that only opens the BoltDB database
+// sharedDriver is an implementation of Driver that only opens the BoltDB database
 // when performing an operation; thus allowing the database to be shared between
 // multiple processes.
-type SharedDriver struct {
+type sharedDriver struct {
 	Path    string
 	Mode    os.FileMode
 	Options *bolt.Options
@@ -23,7 +23,7 @@ type SharedDriver struct {
 }
 
 // View executes a read-only operation.
-func (d *SharedDriver) View(ctx context.Context, op ViewOp) (bool, error) {
+func (d *sharedDriver) View(ctx context.Context, op viewOp) (bool, error) {
 	d.m.RLock()
 	defer d.m.RUnlock()
 
@@ -41,7 +41,7 @@ func (d *SharedDriver) View(ctx context.Context, op ViewOp) (bool, error) {
 }
 
 // Update executes a read/write operation.
-func (d *SharedDriver) Update(ctx context.Context, op UpdateOp) error {
+func (d *sharedDriver) Update(ctx context.Context, op updateOp) error {
 	d.m.Lock()
 	defer d.m.Unlock()
 
@@ -57,7 +57,7 @@ func (d *SharedDriver) Update(ctx context.Context, op UpdateOp) error {
 }
 
 // openR opens the Bolt database in read-only mode.
-func (d *SharedDriver) openR(ctx context.Context) (*bolt.DB, bool, error) {
+func (d *sharedDriver) openR(ctx context.Context) (*bolt.DB, bool, error) {
 	opts := d.Options
 
 	if opts == nil {
@@ -79,7 +79,7 @@ func (d *SharedDriver) openR(ctx context.Context) (*bolt.DB, bool, error) {
 }
 
 // openRW opens the Bolt database in read/write mode.
-func (d *SharedDriver) openRW(ctx context.Context) (*bolt.DB, error) {
+func (d *sharedDriver) openRW(ctx context.Context) (*bolt.DB, error) {
 	opts := d.Options
 
 	if opts == nil {
@@ -92,7 +92,7 @@ func (d *SharedDriver) openRW(ctx context.Context) (*bolt.DB, error) {
 
 // openDB opens the BoltDB database. It uses a timeout derived from the ctx
 // deadline.
-func (d *SharedDriver) openDB(ctx context.Context, opts *bolt.Options) (*bolt.DB, error) {
+func (d *sharedDriver) openDB(ctx context.Context, opts *bolt.Options) (*bolt.DB, error) {
 	if d.closed {
 		return nil, errors.New("database is closed")
 	}
@@ -105,7 +105,7 @@ func (d *SharedDriver) openDB(ctx context.Context, opts *bolt.Options) (*bolt.DB
 }
 
 // Close is a marks the database as closed, preventing future operations.
-func (d *SharedDriver) Close() error {
+func (d *sharedDriver) Close() error {
 	d.m.Lock()
 	defer d.m.Unlock()
 

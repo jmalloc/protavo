@@ -41,8 +41,8 @@ func (op *opForEach) View(ctx context.Context, tx *bolt.Tx) (bool, error) {
 // opForEachMatch is an operation that iterates through all documents that
 // match a set of keys.
 type opForEachMatch struct {
-	Fn         func(*Document) error
-	Constraint []string
+	Fn     func(*Document) error
+	Filter []string
 }
 
 func (op *opForEachMatch) View(ctx context.Context, tx *bolt.Tx) (bool, error) {
@@ -53,7 +53,7 @@ func (op *opForEachMatch) View(ctx context.Context, tx *bolt.Tx) (bool, error) {
 
 	docIDs := map[string]struct{}{}
 
-	for _, key := range op.Constraint {
+	for _, key := range op.Filter {
 		kd, err := getKeyData(b, key)
 		if err != nil {
 			return false, err

@@ -5,10 +5,10 @@ import (
 	"github.com/jmalloc/protobolt/src/protobolt/internal/types"
 )
 
-// matchesConstraint return true if the document with the given meta data has
+// matchesFilter return true if the document with the given meta data has
 // all of the given keys.
-func matchesConstraint(md *types.MetaData, keys []string) bool {
-	for _, key := range keys {
+func matchesFilter(md *types.MetaData, filter []string) bool {
+	for _, key := range filter {
 		if _, ok := md.Keys[key]; !ok {
 			return false
 		}

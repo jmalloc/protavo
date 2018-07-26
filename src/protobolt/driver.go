@@ -6,19 +6,19 @@ import (
 	bolt "github.com/coreos/bbolt"
 )
 
-// Driver is a low-level interface for performing database operations.
-type Driver interface {
-	View(ctx context.Context, op ViewOp) (bool, error)
-	Update(ctx context.Context, op UpdateOp) error
+// driver is a low-level interface for performing database operations.
+type driver interface {
+	View(ctx context.Context, op viewOp) (bool, error)
+	Update(ctx context.Context, op updateOp) error
 	Close() error
 }
 
-// ViewOp is a read-only operation.
-type ViewOp interface {
+// viewOp is a read-only operation.
+type viewOp interface {
 	View(context.Context, *bolt.Tx) (bool, error)
 }
 
-// UpdateOp executes is a read/write operation.
-type UpdateOp interface {
+// updateOp executes is a read/write operation.
+type updateOp interface {
 	Update(context.Context, *bolt.Tx) error
 }

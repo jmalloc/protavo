@@ -9,7 +9,7 @@ import (
 
 // DB is a simple protocol buffers based document store.
 type DB struct {
-	Driver Driver
+	driver driver
 }
 
 // Open creates an opens a new database at the given path.
@@ -24,7 +24,7 @@ func Open(
 ) (*DB, error) {
 	if shared {
 		return &DB{
-			&SharedDriver{
+			&sharedDriver{
 				Path:    path,
 				Mode:    mode,
 				Options: opts,
@@ -38,7 +38,7 @@ func Open(
 	}
 
 	return &DB{
-		&ExclusiveDriver{
+		&exclusiveDriver{
 			Database: db,
 		},
 	}, nil
@@ -52,7 +52,7 @@ func (db *DB) Load(ctx context.Context, id string) (*Document, bool, error) {
 		DocumentID: id,
 	}
 
-	ok, err := db.Driver.View(ctx, op)
+	ok, err := db.driver.View(ctx, op)
 
 	return op.Document, ok, err
 }
@@ -92,7 +92,7 @@ func (db *DB) SaveMany(ctx context.Context, docs ...*Document) ([]*Document, err
 		Documents: docs,
 	}
 
-	return op.SavedDocuments, db.Driver.Update(ctx, op)
+	return op.SavedDocuments, db.driver.Update(ctx, op)
 }
 
 // Delete atomically removes one or more documents from the store.
@@ -106,7 +106,7 @@ func (db *DB) Delete(ctx context.Context, docs ...*Document) error {
 		return nil
 	}
 
-	return db.Driver.Update(ctx, &opDelete{docs})
+	return db.driver.Update(ctx, &opDelete{docs})
 }
 
 // Find returns the the document that has the given unique key.
@@ -116,20 +116,20 @@ func (db *DB) Delete(ctx context.Context, docs ...*Document) error {
 //
 // filter is additional set of keys (either unique or shared) that the document
 // must have in order to match.
-func (db *DB) Find(ctx context.Context, uniq string, keys ...string) (*Document, bool, error) {
+func (db *DB) Find(ctx context.Context, uniq string, filter ...string) (*Document, bool, error) {
 	op := &opFind{
-		UniqueKey:  uniq,
-		Constraint: keys,
+		UniqueKey: uniq,
+		Filter:    filter,
 	}
 
-	ok, err := db.Driver.View(ctx, op)
+	ok, err := db.driver.View(ctx, op)
 
 	return op.Document, ok, err
 }
 
 // FindMany returns the documents that have all of the keys in the given
 // filter.
-func (db *DB) FindMany(ctx context.Context, keys ...string) ([]*Document, error) {
+func (db *DB) FindMany(ctx context.Context, filter ...string) ([]*Document, error) {
 	var docs []*Document
 
 	fn := func(doc *Document) error {
@@ -137,7 +137,7 @@ func (db *DB) FindMany(ctx context.Context, keys ...string) ([]*Document, error)
 		return nil
 	}
 
-	return docs, db.ForEach(ctx, fn, keys...)
+	return docs, db.ForEach(ctx, fn, filter...)
 }
 
 // ForEach calls fn for each document that has all of the keuys in the given
@@ -147,21 +147,21 @@ func (db *DB) FindMany(ctx context.Context, keys ...string) ([]*Document, error)
 func (db *DB) ForEach(
 	ctx context.Context,
 	fn func(*Document) error,
-	keys ...string,
+	filter ...string,
 ) error {
-	var op ViewOp
+	var op viewOp
 
-	if len(keys) == 0 {
+	if len(filter) == 0 {
 		op = &opForEach{fn}
 	} else {
-		op = &opForEachMatch{fn, keys}
+		op = &opForEachMatch{fn, filter}
 	}
 
-	_, err := db.Driver.View(ctx, op)
+	_, err := db.driver.View(ctx, op)
 	return err
 }
 
 // Close closes the database.
 func (db *DB) Close() error {
-	return db.Driver.Close()
+	return db.driver.Close()
 }
