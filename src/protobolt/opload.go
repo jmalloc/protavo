@@ -9,7 +9,7 @@ import (
 // opLoad is an operation that loads a document by its ID.
 type opLoad struct {
 	DocumentID string
-	Document   *Document
+	Result     *Document
 }
 
 // View executes the operation.
@@ -29,7 +29,7 @@ func (op *opLoad) View(ctx context.Context, ns string, tx *bolt.Tx) (bool, error
 		return false, err
 	}
 
-	op.Document = &Document{md, c}
+	op.Result = &Document{md, c}
 
 	return true, nil
 }

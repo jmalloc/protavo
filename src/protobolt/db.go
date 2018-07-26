@@ -78,7 +78,7 @@ func (db *DB) Load(ctx context.Context, id string) (*Document, bool, error) {
 
 	ok, err := db.driver.View(ctx, db.ns, op)
 
-	return op.Document, ok, err
+	return op.Result, ok, err
 }
 
 // Save persists a document to the store, creating it if it does not already
@@ -116,7 +116,7 @@ func (db *DB) SaveMany(ctx context.Context, docs ...*Document) ([]*Document, err
 		Documents: docs,
 	}
 
-	return op.SavedDocuments, db.update(ctx, op)
+	return op.Result, db.update(ctx, op)
 }
 
 // Delete atomically removes one or more documents from the store.
@@ -148,7 +148,7 @@ func (db *DB) Find(ctx context.Context, uniq string, filter ...string) (*Documen
 
 	ok, err := db.view(ctx, op)
 
-	return op.Document, ok, err
+	return op.Result, ok, err
 }
 
 // FindMany returns the documents that have all of the keys in the given
@@ -164,7 +164,7 @@ func (db *DB) FindMany(ctx context.Context, filter ...string) ([]*Document, erro
 	return docs, db.ForEach(ctx, fn, filter...)
 }
 
-// ForEach calls fn for each document that has all of the keuys in the given
+// ForEach calls fn for each document that has all of the keys in the given
 // filter.
 //
 // If fn returns an error, iteration stops and that error is returned.

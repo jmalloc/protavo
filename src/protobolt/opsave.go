@@ -9,8 +9,8 @@ import (
 
 // opSave is an operation that atomically creates/updates one or more documents.
 type opSave struct {
-	Documents      []*Document
-	SavedDocuments []*Document
+	Documents []*Document
+	Result    []*Document
 }
 
 // Update executes the operation.
@@ -20,7 +20,7 @@ func (op *opSave) Update(ctx context.Context, ns string, tx *bolt.Tx) error {
 		return err
 	}
 
-	op.SavedDocuments = make([]*Document, len(op.Documents))
+	op.Result = make([]*Document, len(op.Documents))
 
 	for i, doc := range op.Documents {
 		doc.validate()
@@ -56,7 +56,7 @@ func (op *opSave) Update(ctx context.Context, ns string, tx *bolt.Tx) error {
 			return err
 		}
 
-		op.SavedDocuments[i] = &Document{after, doc.c}
+		op.Result[i] = &Document{after, doc.c}
 	}
 
 	return nil

@@ -11,7 +11,7 @@ import (
 type opFind struct {
 	UniqueKey string
 	Filter    []string
-	Document  *Document
+	Result    *Document
 }
 
 func (op *opFind) View(ctx context.Context, ns string, tx *bolt.Tx) (bool, error) {
@@ -45,7 +45,7 @@ func (op *opFind) View(ctx context.Context, ns string, tx *bolt.Tx) (bool, error
 			return false, err
 		}
 
-		op.Document = &Document{md, c}
+		op.Result = &Document{md, c}
 
 		return true, nil
 	}
