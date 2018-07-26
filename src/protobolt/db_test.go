@@ -148,7 +148,7 @@ func describeDBTest(
 			})
 		})
 
-		When("a an existing document is updated", func() {
+		When("an existing document is updated", func() {
 			var (
 				savedDoc    *Document
 				returnedDoc *Document
@@ -214,32 +214,85 @@ func describeDBTest(
 			})
 		})
 
-		When("there is an existing document with the same unique key", func() {
-			It("returns a duplicate key error", func() {
-				existing := NewDocument(
+		When("the document has a unique key", func() {
+			var (
+				savedDoc *Document
+			)
+
+			BeforeEach(func() {
+				savedDoc = NewDocument(
 					"doc-1",
 					&testtypes.TestContent{
 						Data: "<content-1>",
 					},
 				).WithUniqueKeys("<uniq>")
 
-				_, err := db.Save(ctx, existing)
+				var err error
+				savedDoc, err = db.Save(ctx, savedDoc)
 				Expect(err).ShouldNot(HaveOccurred())
+			})
 
-				new := NewDocument(
+			It("can be updated while retaining the unique key", func() {
+				doc := savedDoc.WithContent(
+					&testtypes.TestContent{
+						Data: "<content-3>",
+					},
+				)
+
+				_, err := db.Save(ctx, doc)
+				Expect(err).ShouldNot(HaveOccurred())
+			})
+
+			It("returns a duplicate key error if another document is saved with the same unique key", func() {
+				doc := NewDocument(
 					"doc-2",
 					&testtypes.TestContent{
 						Data: "<content-1>",
 					},
 				).WithUniqueKeys("<uniq>")
 
-				_, err = db.Save(ctx, new)
-
+				_, err := db.Save(ctx, doc)
 				Expect(err).To(MatchError(&DuplicateKeyError{
 					DocumentID:            "doc-2",
 					ConflictingDocumentID: "doc-1",
 					UniqueKey:             "<uniq>",
 				}))
+			})
+		})
+
+		Describe("Delete", func() {
+			BeforeEach(func() {
+				savedDoc := NewDocument(
+					"doc-id",
+					&testtypes.TestContent{
+						Data: "<content-1>",
+					},
+				).WithUniqueKeys("<uniq>")
+
+				var err error
+				savedDoc, err = db.Save(ctx, savedDoc)
+				Expect(err).ShouldNot(HaveOccurred())
+
+				err = db.Delete(ctx, savedDoc)
+				Expect(err).ShouldNot(HaveOccurred())
+			})
+
+			It("removes the document", func() {
+				_, ok, err := db.Load(ctx, "doc-id")
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(ok).To(BeFalse())
+			})
+
+			It("allows other documents with the same unique key to be saved", func() {
+				doc := NewDocument(
+					"doc-id",
+					&testtypes.TestContent{
+						Data: "<content-1>",
+					},
+				).WithUniqueKeys("<uniq>")
+
+				_, err := db.Save(ctx, doc)
+				Expect(err).ShouldNot(HaveOccurred())
 			})
 		})
 	})

@@ -24,7 +24,7 @@ func updateKeys(b buckets, docID string, before, after *types.MetaData) error {
 
 	// remove the document from any keys that are not present after the update
 	for key := range beforeKeys {
-		if _, ok := after.Keys[key]; ok {
+		if _, ok := afterKeys[key]; ok {
 			continue
 		}
 
