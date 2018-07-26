@@ -1,0 +1,12 @@
+package: github.com/jmalloc/protobolt
+import:
+- package: github.com/coreos/bbolt
+- package: github.com/golang/protobuf
+  subpackages:
+  - proto
+  - ptypes
+  - ptypes/any
+  - ptypes/timestamp
+testImport:
+- package: github.com/onsi/ginkgo
+- package: github.com/onsi/gomega
