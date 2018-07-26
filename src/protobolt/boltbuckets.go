@@ -7,9 +7,10 @@ import (
 )
 
 var (
-	metaDataBucketName = []byte("protobolt-meta")
-	contentBucketName  = []byte("protobolt-content")
-	keysBucketName     = []byte("protobolt-keys")
+	rootBucket         = []byte("protobolt")
+	metaDataBucketName = []byte("meta")
+	contentBucketName  = []byte("content")
+	keysBucketName     = []byte("keys")
 )
 
 type buckets struct {
@@ -19,29 +20,43 @@ type buckets struct {
 }
 
 // getBuckets returns all of the buckets used for storage.
-func getBuckets(tx *bolt.Tx) (buckets, bool, error) {
+func getBuckets(ns string, tx *bolt.Tx) (buckets, bool, error) {
 	var b buckets
 
-	b.MetaData = tx.Bucket(metaDataBucketName)
-	if b.MetaData == nil {
+	root := tx.Bucket(rootBucket)
+	if root == nil {
 		return b, false, nil
 	}
 
-	b.Content = tx.Bucket(contentBucketName)
-	if b.Content == nil {
+	parent := root.Bucket([]byte(ns))
+	if parent == nil {
+		return b, false, nil
+	}
+
+	b.MetaData = parent.Bucket(metaDataBucketName)
+	if b.MetaData == nil {
 		return b, false, fmt.Errorf(
-			"data integrity error: '%s' bucket exists, but '%s' bucket does not",
+			"data integrity error: missing '%s' bucket within '%s' namespace",
 			metaDataBucketName,
-			contentBucketName,
+			ns,
 		)
 	}
 
-	b.Keys = tx.Bucket(keysBucketName)
+	b.Content = parent.Bucket(contentBucketName)
+	if b.Content == nil {
+		return b, false, fmt.Errorf(
+			"data integrity error: missing '%s' bucket within '%s' namespace",
+			contentBucketName,
+			ns,
+		)
+	}
+
+	b.Keys = parent.Bucket(keysBucketName)
 	if b.Keys == nil {
 		return b, false, fmt.Errorf(
-			"data integrity error: '%s' bucket exists, but '%s' bucket does not",
-			metaDataBucketName,
+			"data integrity error: missing '%s' bucket within '%s' namespace",
 			keysBucketName,
+			ns,
 		)
 	}
 
@@ -50,23 +65,30 @@ func getBuckets(tx *bolt.Tx) (buckets, bool, error) {
 
 // createBuckets returns all of the buckets used for storage, creating them
 // if they don't exist.
-func createBuckets(tx *bolt.Tx) (buckets, error) {
-	var (
-		b   buckets
-		err error
-	)
+func createBuckets(ns string, tx *bolt.Tx) (buckets, error) {
+	var b buckets
 
-	b.MetaData, err = tx.CreateBucketIfNotExists(metaDataBucketName)
+	root, err := tx.CreateBucketIfNotExists(rootBucket)
 	if err != nil {
 		return b, err
 	}
 
-	b.Content, err = tx.CreateBucketIfNotExists(contentBucketName)
+	parent, err := root.CreateBucketIfNotExists([]byte(ns))
 	if err != nil {
 		return b, err
 	}
 
-	b.Keys, err = tx.CreateBucketIfNotExists(keysBucketName)
+	b.MetaData, err = parent.CreateBucketIfNotExists(metaDataBucketName)
+	if err != nil {
+		return b, err
+	}
+
+	b.Content, err = parent.CreateBucketIfNotExists(contentBucketName)
+	if err != nil {
+		return b, err
+	}
+
+	b.Keys, err = parent.CreateBucketIfNotExists(keysBucketName)
 
 	return b, err
 }

@@ -2,14 +2,21 @@ package protobolt
 
 import (
 	"context"
+	"errors"
 	"os"
+	"sync"
 
 	bolt "github.com/coreos/bbolt"
 )
 
 // DB is a simple protocol buffers based document store.
 type DB struct {
-	driver driver
+	driver      driver
+	closeDriver bool
+	ns          string
+
+	m        sync.RWMutex
+	isClosed bool
 }
 
 // Open creates an opens a new database at the given path.
@@ -18,17 +25,20 @@ type DB struct {
 // allow the database to be shared between multiple processes.
 func Open(
 	path string,
+	ns string,
 	shared bool,
 	mode os.FileMode,
 	opts *bolt.Options,
 ) (*DB, error) {
 	if shared {
 		return &DB{
-			&sharedDriver{
+			driver: &sharedDriver{
 				Path:    path,
 				Mode:    mode,
 				Options: opts,
 			},
+			closeDriver: true,
+			ns:          ns,
 		}, nil
 	}
 
@@ -38,9 +48,23 @@ func Open(
 	}
 
 	return &DB{
-		&exclusiveDriver{
+		driver: &exclusiveDriver{
 			Database: db,
 		},
+		closeDriver: true,
+		ns:          ns,
+	}, nil
+}
+
+// Use returns a DB that uses an existing open Bolt DB.
+// Calling Close() on the return DB does NOT close the BoltDB.
+func Use(ns string, db *bolt.DB) (*DB, error) {
+	return &DB{
+		driver: &exclusiveDriver{
+			Database: db,
+		},
+		closeDriver: false,
+		ns:          ns,
 	}, nil
 }
 
@@ -52,7 +76,7 @@ func (db *DB) Load(ctx context.Context, id string) (*Document, bool, error) {
 		DocumentID: id,
 	}
 
-	ok, err := db.driver.View(ctx, op)
+	ok, err := db.driver.View(ctx, db.ns, op)
 
 	return op.Document, ok, err
 }
@@ -92,7 +116,7 @@ func (db *DB) SaveMany(ctx context.Context, docs ...*Document) ([]*Document, err
 		Documents: docs,
 	}
 
-	return op.SavedDocuments, db.driver.Update(ctx, op)
+	return op.SavedDocuments, db.update(ctx, op)
 }
 
 // Delete atomically removes one or more documents from the store.
@@ -106,7 +130,7 @@ func (db *DB) Delete(ctx context.Context, docs ...*Document) error {
 		return nil
 	}
 
-	return db.driver.Update(ctx, &opDelete{docs})
+	return db.update(ctx, &opDelete{docs})
 }
 
 // Find returns the the document that has the given unique key.
@@ -122,7 +146,7 @@ func (db *DB) Find(ctx context.Context, uniq string, filter ...string) (*Documen
 		Filter:    filter,
 	}
 
-	ok, err := db.driver.View(ctx, op)
+	ok, err := db.view(ctx, op)
 
 	return op.Document, ok, err
 }
@@ -157,11 +181,46 @@ func (db *DB) ForEach(
 		op = &opForEachMatch{fn, filter}
 	}
 
-	_, err := db.driver.View(ctx, op)
+	_, err := db.view(ctx, op)
 	return err
 }
 
 // Close closes the database.
 func (db *DB) Close() error {
-	return db.driver.Close()
+	db.m.Lock()
+	defer db.m.Unlock()
+
+	if db.isClosed {
+		return nil
+	}
+
+	db.isClosed = true
+
+	if db.closeDriver {
+		return db.driver.Close()
+	}
+
+	return nil
+}
+
+func (db *DB) view(ctx context.Context, op viewOp) (bool, error) {
+	db.m.RLock()
+	defer db.m.RUnlock()
+
+	if db.isClosed {
+		return false, errors.New("database is closed")
+	}
+
+	return db.driver.View(ctx, db.ns, op)
+}
+
+func (db *DB) update(ctx context.Context, op updateOp) error {
+	db.m.RLock()
+	defer db.m.RUnlock()
+
+	if db.isClosed {
+		return errors.New("database is closed")
+	}
+
+	return db.driver.Update(ctx, db.ns, op)
 }

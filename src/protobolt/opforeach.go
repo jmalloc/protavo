@@ -11,8 +11,8 @@ type opForEach struct {
 	Fn func(*Document) error
 }
 
-func (op *opForEach) View(ctx context.Context, tx *bolt.Tx) (bool, error) {
-	b, ok, err := getBuckets(tx)
+func (op *opForEach) View(ctx context.Context, ns string, tx *bolt.Tx) (bool, error) {
+	b, ok, err := getBuckets(ns, tx)
 	if !ok || err != nil {
 		return false, err
 	}
@@ -45,8 +45,8 @@ type opForEachMatch struct {
 	Filter []string
 }
 
-func (op *opForEachMatch) View(ctx context.Context, tx *bolt.Tx) (bool, error) {
-	b, ok, err := getBuckets(tx)
+func (op *opForEachMatch) View(ctx context.Context, ns string, tx *bolt.Tx) (bool, error) {
+	b, ok, err := getBuckets(ns, tx)
 	if !ok || err != nil {
 		return false, err
 	}

@@ -12,8 +12,8 @@ type opDelete struct {
 }
 
 // Update executes the operation.
-func (op *opDelete) Update(ctx context.Context, tx *bolt.Tx) error {
-	b, ok, err := getBuckets(tx)
+func (op *opDelete) Update(ctx context.Context, ns string, tx *bolt.Tx) error {
+	b, ok, err := getBuckets(ns, tx)
 	if !ok || err != nil {
 		return err
 	}

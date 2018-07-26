@@ -14,8 +14,8 @@ type opSave struct {
 }
 
 // Update executes the operation.
-func (op *opSave) Update(ctx context.Context, tx *bolt.Tx) error {
-	b, err := createBuckets(tx)
+func (op *opSave) Update(ctx context.Context, ns string, tx *bolt.Tx) error {
+	b, err := createBuckets(ns, tx)
 	if err != nil {
 		return err
 	}

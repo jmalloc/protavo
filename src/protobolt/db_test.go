@@ -40,7 +40,7 @@ func describeDBTest(
 			err = os.Remove(path)
 			Expect(err).ShouldNot(HaveOccurred())
 
-			db, err = Open(path, shared, 0600, nil)
+			db, err = Open(path, "test-ns", shared, 0600, nil)
 			Expect(err).ShouldNot(HaveOccurred())
 		})
 

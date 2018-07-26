@@ -2,9 +2,7 @@ package protobolt
 
 import (
 	"context"
-	"errors"
 	"os"
-	"sync"
 	"time"
 
 	bolt "github.com/coreos/bbolt"
@@ -17,16 +15,10 @@ type sharedDriver struct {
 	Path    string
 	Mode    os.FileMode
 	Options *bolt.Options
-
-	m      sync.RWMutex
-	closed bool
 }
 
 // View executes a read-only operation.
-func (d *sharedDriver) View(ctx context.Context, op viewOp) (bool, error) {
-	d.m.RLock()
-	defer d.m.RUnlock()
-
+func (d *sharedDriver) View(ctx context.Context, ns string, op viewOp) (bool, error) {
 	db, ok, err := d.openR(ctx)
 	if !ok || err != nil {
 		return false, err
@@ -35,16 +27,13 @@ func (d *sharedDriver) View(ctx context.Context, op viewOp) (bool, error) {
 
 	return ok, db.View(func(tx *bolt.Tx) error {
 		var err error
-		ok, err = op.View(ctx, tx)
+		ok, err = op.View(ctx, ns, tx)
 		return err
 	})
 }
 
 // Update executes a read/write operation.
-func (d *sharedDriver) Update(ctx context.Context, op updateOp) error {
-	d.m.Lock()
-	defer d.m.Unlock()
-
+func (d *sharedDriver) Update(ctx context.Context, ns string, op updateOp) error {
 	db, err := d.openRW(ctx)
 	if err != nil {
 		return err
@@ -52,7 +41,7 @@ func (d *sharedDriver) Update(ctx context.Context, op updateOp) error {
 	defer db.Close()
 
 	return db.Update(func(tx *bolt.Tx) error {
-		return op.Update(ctx, tx)
+		return op.Update(ctx, ns, tx)
 	})
 }
 
@@ -93,10 +82,6 @@ func (d *sharedDriver) openRW(ctx context.Context) (*bolt.DB, error) {
 // openDB opens the BoltDB database. It uses a timeout derived from the ctx
 // deadline.
 func (d *sharedDriver) openDB(ctx context.Context, opts *bolt.Options) (*bolt.DB, error) {
-	if d.closed {
-		return nil, errors.New("database is closed")
-	}
-
 	if dl, ok := ctx.Deadline(); ok {
 		opts.Timeout = time.Until(dl)
 	}
@@ -104,12 +89,8 @@ func (d *sharedDriver) openDB(ctx context.Context, opts *bolt.Options) (*bolt.DB
 	return bolt.Open(d.Path, d.Mode, opts)
 }
 
-// Close is a marks the database as closed, preventing future operations.
+// Close is a no-op, as the BoltDB database is only opened while performing an
+// operation.
 func (d *sharedDriver) Close() error {
-	d.m.Lock()
-	defer d.m.Unlock()
-
-	d.closed = true
-
 	return nil
 }

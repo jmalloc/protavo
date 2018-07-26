@@ -13,20 +13,20 @@ type exclusiveDriver struct {
 }
 
 // View executes a read-only operation.
-func (d *exclusiveDriver) View(ctx context.Context, op viewOp) (bool, error) {
+func (d *exclusiveDriver) View(ctx context.Context, ns string, op viewOp) (bool, error) {
 	var ok bool
 
 	return ok, d.Database.View(func(tx *bolt.Tx) error {
 		var err error
-		ok, err = op.View(ctx, tx)
+		ok, err = op.View(ctx, ns, tx)
 		return err
 	})
 }
 
 // Update executes a read/write operation.
-func (d *exclusiveDriver) Update(ctx context.Context, op updateOp) error {
+func (d *exclusiveDriver) Update(ctx context.Context, ns string, op updateOp) error {
 	return d.Database.Update(func(tx *bolt.Tx) error {
-		return op.Update(ctx, tx)
+		return op.Update(ctx, ns, tx)
 	})
 }
 

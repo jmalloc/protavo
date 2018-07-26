@@ -14,8 +14,8 @@ type opFind struct {
 	Document  *Document
 }
 
-func (op *opFind) View(ctx context.Context, tx *bolt.Tx) (bool, error) {
-	b, ok, err := getBuckets(tx)
+func (op *opFind) View(ctx context.Context, ns string, tx *bolt.Tx) (bool, error) {
+	b, ok, err := getBuckets(ns, tx)
 	if !ok || err != nil {
 		return false, err
 	}
