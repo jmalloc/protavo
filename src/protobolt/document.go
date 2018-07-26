@@ -113,7 +113,7 @@ func (d *Document) keysByType(t types.KeyType) []string {
 	return keys
 }
 
-// Content returns a copy of the document's meta-data.
+// Content returns a copy of the document's content.
 func (d *Document) Content() proto.Message {
 	return proto.Clone(d.c)
 }
