@@ -1,6 +1,6 @@
 # Protobolt
 
-[![Build Status](http://img.shields.io/travis/jmalloc/protobolt/master.svg)](https://travis-ci.com/jmalloc/protobolt)
+[![Build Status](http://img.shields.io/travis/com/jmalloc/protobolt/master.svg)](https://travis-ci.com/jmalloc/protobolt)
 [![Code Coverage](https://img.shields.io/codecov/c/github/jmalloc/protobolt/master.svg)](https://codecov.io/github/jmalloc/protobolt)
 [![Latest Version](https://img.shields.io/github/tag/jmalloc/protobolt.svg?label=semver)](https://semver.org)
 [![GoDoc](https://godoc.org/github.com/jmalloc/protobolt?status.svg)](https://godoc.org/github.com/jmalloc/protobolt/src/protobolt)
