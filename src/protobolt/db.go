@@ -7,6 +7,7 @@ import (
 	"sync"
 
 	bolt "github.com/coreos/bbolt"
+	"github.com/jmalloc/protobolt/src/protobolt/internal/types"
 )
 
 // DB is a simple protocol buffers based document store.
@@ -113,7 +114,39 @@ func (db *DB) SaveMany(ctx context.Context, docs ...*Document) ([]*Document, err
 	}
 
 	op := &opSave{
-		Documents: docs,
+		Documents:     docs,
+		CheckVersions: true,
+	}
+
+	return op.Result, db.update(ctx, op)
+}
+
+// UncheckedSave persists a document to the store without checking the current
+// version.
+//
+// It returns the saved version of the document, with the new version number.
+func (db *DB) UncheckedSave(ctx context.Context, doc *Document) (*Document, error) {
+	saved, err := db.UncheckedSaveMany(ctx, doc)
+	if err != nil {
+		return nil, err
+	}
+
+	return saved[0], nil
+}
+
+// UncheckedSaveMany atomically persists one or more documents to the store
+// without checking the current versions.
+//
+// It returns the saved versions of the documents, in the same order as they
+// are provided.
+func (db *DB) UncheckedSaveMany(ctx context.Context, docs ...*Document) ([]*Document, error) {
+	if len(docs) == 0 {
+		return nil, nil
+	}
+
+	op := &opSave{
+		Documents:     docs,
+		CheckVersions: false,
 	}
 
 	return op.Result, db.update(ctx, op)
@@ -130,7 +163,35 @@ func (db *DB) Delete(ctx context.Context, docs ...*Document) error {
 		return nil
 	}
 
-	return db.update(ctx, &opDelete{docs})
+	return db.update(ctx, &opDelete{
+		Documents:     docs,
+		CheckVersions: true,
+	})
+}
+
+// UncheckedDelete atomically removes one or more documents from the store
+// without checking the current version.
+//
+// It is not an error to delete a non-existent document.
+func (db *DB) UncheckedDelete(ctx context.Context, ids ...string) error {
+	if len(ids) == 0 {
+		return nil
+	}
+
+	docs := make([]*Document, len(ids))
+
+	for i, id := range ids {
+		docs[i] = &Document{
+			md: &types.MetaData{
+				Id: id,
+			},
+		}
+	}
+
+	return db.update(ctx, &opDelete{
+		Documents:     docs,
+		CheckVersions: false,
+	})
 }
 
 // Find returns the the document that has the given unique key.

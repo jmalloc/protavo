@@ -8,7 +8,8 @@ import (
 
 // opDelete is an operation that atomically deletes one or more documents.
 type opDelete struct {
-	Documents []*Document
+	Documents     []*Document
+	CheckVersions bool
 }
 
 // Update executes the operation.
@@ -26,8 +27,10 @@ func (op *opDelete) Update(ctx context.Context, ns string, tx *bolt.Tx) error {
 			return err
 		}
 
-		if err := checkVersion("delete", md, doc.md); err != nil {
-			return err
+		if op.CheckVersions {
+			if err := checkVersion("delete", md, doc.md); err != nil {
+				return err
+			}
 		}
 
 		if err := updateKeys(b, doc.md.Id, md, nil); err != nil {

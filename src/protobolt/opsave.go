@@ -9,8 +9,9 @@ import (
 
 // opSave is an operation that atomically creates/updates one or more documents.
 type opSave struct {
-	Documents []*Document
-	Result    []*Document
+	Documents     []*Document
+	CheckVersions bool
+	Result        []*Document
 }
 
 // Update executes the operation.
@@ -26,21 +27,24 @@ func (op *opSave) Update(ctx context.Context, ns string, tx *bolt.Tx) error {
 		doc.validate()
 
 		after := doc.cloneMetaData()
-		before, ok, err := tryGetMetaData(b, after.Id)
+		before, alreadyExists, err := tryGetMetaData(b, after.Id)
 		if err != nil {
 			return err
 		}
 
-		if err := checkVersion("save", before, after); err != nil {
-			return err
+		if op.CheckVersions {
+			if err := checkVersion("save", before, after); err != nil {
+				return err
+			}
 		}
 
-		after.Version++
 		after.UpdatedAt = ptypes.TimestampNow()
 
-		if ok {
+		if alreadyExists {
+			after.Version = before.Version + 1
 			after.CreatedAt = before.CreatedAt
 		} else {
+			after.Version = 1
 			after.CreatedAt = after.UpdatedAt
 		}
 
