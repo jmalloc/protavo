@@ -79,6 +79,40 @@ func (d *Document) UpdatedAt() (time.Time, bool) {
 	return t, true
 }
 
+// Keys returns all of the document's indexing keys.
+func (d *Document) Keys() []string {
+	keys := make([]string, 0, len(d.md.Keys))
+
+	for k := range d.md.Keys {
+		keys = append(keys, k)
+	}
+
+	return keys
+}
+
+// UniqueKeys returns the document's unique indexing keys.
+func (d *Document) UniqueKeys() []string {
+	return d.keysByType(types.KeyType_UNIQUE)
+}
+
+// SharedKeys returns the document's shared indexing keys.
+func (d *Document) SharedKeys() []string {
+	return d.keysByType(types.KeyType_SHARED)
+}
+
+// keysByType returns the document's unique indexing keys.
+func (d *Document) keysByType(t types.KeyType) []string {
+	keys := make([]string, 0, len(d.md.Keys))
+
+	for k, kt := range d.md.Keys {
+		if kt == t {
+			keys = append(keys, k)
+		}
+	}
+
+	return keys
+}
+
 // Content returns a copy of the document's meta-data.
 func (d *Document) Content() proto.Message {
 	return proto.Clone(d.c)
