@@ -19,7 +19,8 @@ type buckets struct {
 	Keys     *bolt.Bucket
 }
 
-// getBuckets returns all of the buckets used for storage.
+// getBuckets returns all of the buckets used for storage of the given
+// namespace.
 func getBuckets(ns string, tx *bolt.Tx) (buckets, bool, error) {
 	var b buckets
 
@@ -63,8 +64,8 @@ func getBuckets(ns string, tx *bolt.Tx) (buckets, bool, error) {
 	return b, true, nil
 }
 
-// createBuckets returns all of the buckets used for storage, creating them
-// if they don't exist.
+// createBuckets returns all of the buckets used for storage in the given
+// namespace, creating them if they don't exist.
 func createBuckets(ns string, tx *bolt.Tx) (buckets, error) {
 	var b buckets
 
@@ -91,4 +92,21 @@ func createBuckets(ns string, tx *bolt.Tx) (buckets, error) {
 	b.Keys, err = parent.CreateBucketIfNotExists(keysBucketName)
 
 	return b, err
+}
+
+// deleteBuckets deletes all of the buckets used for storage of the given
+// namespace.
+func deleteBuckets(ns string, tx *bolt.Tx) error {
+	root := tx.Bucket(rootBucket)
+	if root == nil {
+		return nil
+	}
+
+	err := root.DeleteBucket([]byte(ns))
+
+	if err == bolt.ErrBucketNotFound {
+		return nil
+	}
+
+	return err
 }

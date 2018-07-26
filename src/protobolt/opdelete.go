@@ -50,3 +50,12 @@ func (op *opDelete) Update(ctx context.Context, ns string, tx *bolt.Tx) error {
 
 	return nil
 }
+
+// opDeleteAll is an operation that atomically removes all documents from the store.
+type opDeleteAll struct {
+}
+
+// Update executes the operation.
+func (op *opDeleteAll) Update(ctx context.Context, ns string, tx *bolt.Tx) error {
+	return deleteBuckets(ns, tx)
+}

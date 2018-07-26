@@ -194,6 +194,11 @@ func (db *DB) UncheckedDelete(ctx context.Context, ids ...string) error {
 	})
 }
 
+// DeleteAll removes all documents from the store.
+func (db *DB) DeleteAll(ctx context.Context) error {
+	return db.update(ctx, &opDeleteAll{})
+}
+
 // Find returns the the document that has the given unique key.
 //
 // u must refer to a unique key. If no such key exists, or the key is not
