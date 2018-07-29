@@ -25,7 +25,7 @@ func FetchWhere(fn driver.FetchFunc, f ...filter.Condition) *driver.Fetch {
 	}
 }
 
-// Save atomically creates or update a documents.
+// Save returns an operation that creates or update a document.
 //
 // The Revision field of the document must be equal to the revision of that
 // document as currently persisted; otherwise, an OptimisticLockError is
@@ -40,8 +40,8 @@ func Save(doc *Document) *driver.Save {
 	}
 }
 
-// ForceSave creates or updates a documents without checking the current
-// revisions.
+// ForceSave returns an operation that creates or updates a document without
+// checking the current revision.
 //
 // doc is updated with its new revision and timestamp.
 func ForceSave(doc *Document) *driver.Save {
@@ -51,7 +51,7 @@ func ForceSave(doc *Document) *driver.Save {
 	}
 }
 
-// Delete removes a document.
+// Delete returns an operation that removes a document.
 //
 // The Revision field of the document must be equal to the revision of that
 // document as currently persisted; otherwise, an OptimisticLockError is
@@ -65,8 +65,8 @@ func Delete(doc *Document) *driver.Delete {
 	}
 }
 
-// DeleteWhere atomically removes the documents that match the given filter
-// conditions without checking the current revisions.
+// DeleteWhere returns an operation that atomically removes the documents that
+// match the given filter conditions without checking the current revisions.
 //
 // If fn is non-nil, it is invoked for each of the deleted documents.
 func DeleteWhere(
