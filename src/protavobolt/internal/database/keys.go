@@ -6,6 +6,16 @@ import (
 	"github.com/jmalloc/protavo/src/protavo/document"
 )
 
+const (
+	// SharedKeyType is a plain uint32 representation of the document.SharedKey
+	// constant.
+	SharedKeyType = uint32(document.SharedKey)
+
+	// UniqueKeyType is a plain uint32 representation of the document.UniqueKey
+	// constant.
+	UniqueKeyType = uint32(document.UniqueKey)
+)
+
 // UpdateKeys updates the unique keys for a specific document.
 func (s *Store) UpdateKeys(
 	id string,
@@ -53,7 +63,7 @@ func (s *Store) UpdateKeys(
 			// there are no other documents, update the key however neceessary
 			k.Type = afterType
 			k.Documents = map[string]bool{id: true}
-		} else if k.Type == document.SharedKey && afterType == document.SharedKey {
+		} else if k.Type == SharedKeyType && afterType == SharedKeyType {
 			// there are other documents, but the key is shared AND the document wants a
 			// shared key, so simply add the document to the key
 			k.Documents[id] = true

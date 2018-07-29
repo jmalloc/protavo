@@ -4,7 +4,7 @@ import "github.com/jmalloc/protavo/src/protavo/document"
 
 // Condition is a predicate that checks if a document meets a certain criteria.
 type Condition interface {
-	Match(*document.Document) bool
+	IsSatisfiedBy(*document.Document) bool
 	Accept(Visitor) (bool, error)
 }
 
@@ -19,8 +19,9 @@ func New(conds []Condition) *Filter {
 	return optimize(&Filter{conds})
 }
 
-// Match returns true if doc meets this condition.
-func (f *Filter) Match(doc *document.Document) bool {
+// IsSatisfiedBy returns true if doc meets this all of the conditions in the
+// filter.
+func (f *Filter) IsSatisfiedBy(doc *document.Document) bool {
 	if f == nil {
 		// the nil filter matches everything
 		return true
@@ -30,7 +31,7 @@ func (f *Filter) Match(doc *document.Document) bool {
 	}
 
 	for _, c := range f.Conditions {
-		if !c.Match(doc) {
+		if !c.IsSatisfiedBy(doc) {
 			return false
 		}
 	}
@@ -41,7 +42,7 @@ func (f *Filter) Match(doc *document.Document) bool {
 // Accept calls c.Accept(v) for each condition in f.
 //
 // If f is nil, Accept() returns true. If f is non-nil, but contains no matchers
-// it returns false. The behavior is useful for building custom matches.
+// it returns false. The behavior is useful for building custom matchers.
 func (f *Filter) Accept(v Visitor) (bool, error) {
 	if f == nil {
 		return true, nil

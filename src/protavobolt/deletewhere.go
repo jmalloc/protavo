@@ -43,21 +43,8 @@ func (p *scanRecords) DeleteWhere(fn driver.DeleteWhereFunc) error {
 
 		id := string(k)
 
-		// we have to construct the whole document just to match the filter
-		if p.filter != nil {
-			c, err := p.store.GetContent(id)
-			if err != nil {
-				return err
-			}
-
-			doc, err := newDocument(id, rec, c)
-			if err != nil {
-				return err
-			}
-
-			if !p.filter.Match(doc) {
-				continue
-			}
+		if !isFilterSatisfiedByRecord(p.filter, id, rec) {
+			continue
 		}
 
 		// use the cursor to delete the record so that we don't invalidate it
@@ -82,3 +69,15 @@ func (p *scanRecords) DeleteWhere(fn driver.DeleteWhereFunc) error {
 
 	return nil
 }
+
+// func (p *getByID) DeleteWhere(driver.DeleteWhereFunc) error {
+// 	panic("ni")
+// }
+
+// func (p *getByUniqueKey) DeleteWhere(driver.DeleteWhereFunc) error {
+// 	panic("ni")
+// }
+
+// func (p *getByKeys) DeleteWhere(driver.DeleteWhereFunc) error {
+// 	panic("ni")
+// }

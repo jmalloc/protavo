@@ -8,8 +8,8 @@ type HasKeys struct {
 	Values Set
 }
 
-// Match returns true if doc meets this condition.
-func (c *HasKeys) Match(doc *document.Document) bool {
+// IsSatisfiedBy returns true if doc meets this condition.
+func (c *HasKeys) IsSatisfiedBy(doc *document.Document) bool {
 	for k := range c.Values {
 		if _, ok := doc.Keys[k]; !ok {
 			return false
@@ -30,11 +30,23 @@ type HasUniqueKeyIn struct {
 	Values Set
 }
 
-// Match returns true if doc meets this condition.
-func (c *HasUniqueKeyIn) Match(doc *document.Document) bool {
-	for _, k := range doc.UniqueKeys() {
-		if _, ok := c.Values[k]; ok {
-			return true
+// IsSatisfiedBy returns true if doc meets this condition.
+func (c *HasUniqueKeyIn) IsSatisfiedBy(doc *document.Document) bool {
+	// iterate the smaller of the two sets
+	if len(c.Values) <= len(doc.Keys) {
+		for k := range c.Values {
+			t, ok := doc.Keys[k]
+			if ok && t == document.UniqueKey {
+				return true
+			}
+		}
+	} else {
+		for k, t := range doc.Keys {
+			if t == document.UniqueKey {
+				if _, ok := c.Values[k]; ok {
+					return true
+				}
+			}
 		}
 	}
 

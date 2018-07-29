@@ -13,11 +13,11 @@ const (
 	// UniqueKey is the KeyType for keys that are always exclusive to a single document.
 	// Uniqye keys are useful for addressing specific documents by some role they
 	// fill or property they hold.
-	UniqueKey = 1
+	UniqueKey KeyType = 1
 
 	// SharedKey is the KeyType for keys that may be shared by multiple documents.
 	// Shared keys are useful for quickly locating sets of related documents.
-	SharedKey = 2
+	SharedKey KeyType = 2
 )
 
 // Document is a document stored in a DB.

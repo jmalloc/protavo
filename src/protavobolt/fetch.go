@@ -42,6 +42,10 @@ func (p *scanRecords) Fetch(fn driver.FetchFunc) error {
 
 		id := string(k)
 
+		if !isFilterSatisfiedByRecord(p.filter, id, rec) {
+			continue
+		}
+
 		c, err := p.store.GetContent(id)
 		if err != nil {
 			return err
@@ -52,10 +56,6 @@ func (p *scanRecords) Fetch(fn driver.FetchFunc) error {
 			return err
 		}
 
-		if !p.filter.Match(doc) {
-			continue
-		}
-
 		ok, err := fn(doc)
 		if !ok || err != nil {
 			return err
@@ -64,3 +64,24 @@ func (p *scanRecords) Fetch(fn driver.FetchFunc) error {
 
 	return nil
 }
+
+// func (p *getByID) Fetch(fn driver.FetchFunc) error {
+// 	for id := range p.conds.ID {
+// 		rec, exists, err := p.store.TryGetRecord(id)
+// 		if err != nil {
+// 			return err
+// 		}
+
+// 		if !exists {
+// 			continue
+// 		}
+// 	}
+// }
+
+// func (p *getByUniqueKey) Fetch(fn driver.FetchFunc) error {
+// 	panic("ni")
+// }
+
+// func (p *getByKeys) Fetch(fn driver.FetchFunc) error {
+// 	panic("ni")
+// }

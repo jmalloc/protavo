@@ -7,8 +7,8 @@ type IsOneOf struct {
 	Values Set
 }
 
-// Match returns true if doc meets this condition.
-func (c *IsOneOf) Match(doc *document.Document) bool {
+// IsSatisfiedBy returns true if doc meets this condition.
+func (c *IsOneOf) IsSatisfiedBy(doc *document.Document) bool {
 	_, ok := c.Values[doc.ID]
 	return ok
 }
