@@ -15,7 +15,7 @@ import (
 //
 // The returned operation can be executed atomically with other operations using
 // DB.Read() or DB.Write().
-func FetchAll(fn driver.FetchFunc) *driver.Fetch {
+func FetchAll(fn driver.FetchFunc) driver.ReadOnlyOperation {
 	return &driver.Fetch{
 		Each: fn,
 	}
@@ -28,7 +28,7 @@ func FetchAll(fn driver.FetchFunc) *driver.Fetch {
 //
 // The returned operation can be executed atomically with other operations using
 // DB.Read() or DB.Write().
-func FetchWhere(fn driver.FetchFunc, f ...filter.Condition) *driver.Fetch {
+func FetchWhere(fn driver.FetchFunc, f ...filter.Condition) driver.ReadOnlyOperation {
 	return &driver.Fetch{
 		Each:   fn,
 		Filter: filter.New(f),
@@ -47,7 +47,7 @@ func FetchWhere(fn driver.FetchFunc, f ...filter.Condition) *driver.Fetch {
 //
 // The returned operation can be executed atomically with other operations using
 // DB.Write().
-func Save(doc *document.Document) *driver.Save {
+func Save(doc *document.Document) driver.Operation {
 	return &driver.Save{
 		Document: doc,
 	}
@@ -60,7 +60,7 @@ func Save(doc *document.Document) *driver.Save {
 //
 // The returned operation can be executed atomically with other operations using
 // DB.Write().
-func ForceSave(doc *document.Document) *driver.Save {
+func ForceSave(doc *document.Document) driver.Operation {
 	return &driver.Save{
 		Document: doc,
 		Force:    true,
@@ -78,7 +78,7 @@ func ForceSave(doc *document.Document) *driver.Save {
 //
 // The returned operation can be executed atomically with other operations using
 // DB.Write().
-func Delete(doc *document.Document) *driver.Delete {
+func Delete(doc *document.Document) driver.Operation {
 	return &driver.Delete{
 		Document: doc,
 	}
@@ -94,7 +94,7 @@ func Delete(doc *document.Document) *driver.Delete {
 func DeleteWhere(
 	fn driver.DeleteWhereFunc,
 	f ...filter.Condition,
-) *driver.DeleteWhere {
+) driver.Operation {
 	return &driver.DeleteWhere{
 		Filter: filter.New(f),
 	}

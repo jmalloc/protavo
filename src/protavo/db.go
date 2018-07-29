@@ -123,7 +123,7 @@ func (db *DB) FetchWhere(
 //
 // Each document in docs is updated with its new revision and timestamp.
 func (db *DB) Save(ctx context.Context, docs ...*document.Document) error {
-	ops := make([]driver.WriteTxOp, len(docs))
+	ops := make([]driver.Operation, len(docs))
 
 	for i, doc := range docs {
 		ops[i] = Save(doc)
@@ -137,7 +137,7 @@ func (db *DB) Save(ctx context.Context, docs ...*document.Document) error {
 //
 // Each document in docs is updated with its new revision and timestamp.
 func (db *DB) ForceSave(ctx context.Context, docs ...*document.Document) error {
-	ops := make([]driver.WriteTxOp, len(docs))
+	ops := make([]driver.Operation, len(docs))
 
 	for i, doc := range docs {
 		ops[i] = ForceSave(doc)
@@ -155,7 +155,7 @@ func (db *DB) ForceSave(ctx context.Context, docs ...*document.Document) error {
 // It is not an error to delete a non-existent document, provided the given
 // revision is 0.
 func (db *DB) Delete(ctx context.Context, docs ...*document.Document) error {
-	ops := make([]driver.WriteTxOp, len(docs))
+	ops := make([]driver.Operation, len(docs))
 
 	for i, doc := range docs {
 		ops[i] = Delete(doc)
@@ -239,7 +239,7 @@ func (db *DB) DeleteNamespace(ctx context.Context) error {
 // Read atomically executes a set of read operations.
 func (db *DB) Read(
 	ctx context.Context,
-	ops ...driver.ReadTxOp,
+	ops ...driver.ReadOnlyOperation,
 ) error {
 	tx, err := db.d.BeginRead(ctx, db.ns)
 	if err != nil {
@@ -261,7 +261,7 @@ func (db *DB) Read(
 // Write atomically executes a set of read/write operations.
 func (db *DB) Write(
 	ctx context.Context,
-	ops ...driver.WriteTxOp,
+	ops ...driver.Operation,
 ) error {
 	tx, err := db.d.BeginWrite(ctx, db.ns)
 	if err != nil {

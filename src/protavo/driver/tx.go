@@ -32,22 +32,16 @@ type Operation interface {
 	// MarkExecuted is called by driver implementors to indicate the result of the
 	// operation.
 	MarkExecuted(err error)
-}
-
-// WriteTxOp is an operation that can be performed inside transactions that
-// support writing.
-type WriteTxOp interface {
-	Operation
 
 	// ExecuteInWriteTx executes the operation within the context of a write
 	// transaction.
 	ExecuteInWriteTx(ctx context.Context, tx WriteTx)
 }
 
-// ReadTxOp is an operation that can be performed inside transactions that
-// support reading.
-type ReadTxOp interface {
-	WriteTxOp // all read operations can be performed insite write transactions.
+// ReadOnlyOperation is an operation that can be performed inside transactions
+// that support reading.
+type ReadOnlyOperation interface {
+	Operation
 
 	// ExecuteInReadTx executes the operation within the context of a read
 	// transaction.
