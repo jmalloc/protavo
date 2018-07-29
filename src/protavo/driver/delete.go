@@ -12,7 +12,6 @@ type Delete struct {
 	operation
 
 	Document *document.Document
-	Result   *Result
 }
 
 // ExecuteInWriteTx executes this operation within the context of tx.
