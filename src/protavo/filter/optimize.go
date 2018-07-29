@@ -1,8 +1,8 @@
 package filter
 
-// optimize performs basic optimization of the given filter.
-func optimize(f *Filter) *Filter {
-	o := &optimizer{filter: f}
+// Optimize performs basic optimization of the given filter.
+func Optimize(f *Filter) *Filter {
+	o := &optimizer{}
 
 	possible, err := f.Accept(o)
 	if err != nil {
@@ -28,6 +28,9 @@ func optimize(f *Filter) *Filter {
 		conds = append(conds, o.hasKeys)
 	}
 
+	// TODO(jmalloc): we could scan o.hasKeys to look for any keys that are also in
+	// o.hasUniqueKeyIn and remove it from the set.
+
 	// if all of the conditions have been optimized away return a nil filter
 	if len(conds) == 0 {
 		return nil
@@ -37,8 +40,6 @@ func optimize(f *Filter) *Filter {
 }
 
 type optimizer struct {
-	filter *Filter
-
 	isOneOf             *IsOneOf
 	isOneOfCount        int
 	hasUniqueKeyIn      *HasUniqueKeyIn
