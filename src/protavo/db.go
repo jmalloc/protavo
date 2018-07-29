@@ -9,8 +9,6 @@ import (
 )
 
 // DB is a Protocol Buffers based document store.
-//
-// TODO(jmalloc): Add efficient count operations.
 type DB struct {
 	ns string
 	d  driver.Driver
