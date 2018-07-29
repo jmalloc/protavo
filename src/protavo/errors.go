@@ -44,3 +44,9 @@ func (e *DuplicateKeyError) Error() string {
 		e.UniqueKey,
 	)
 }
+
+// IsDuplicateKeyError returns true if err represents a duplicate key error.
+func IsDuplicateKeyError(err error) bool {
+	_, ok := err.(*DuplicateKeyError)
+	return ok
+}
