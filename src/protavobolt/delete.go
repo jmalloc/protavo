@@ -45,9 +45,5 @@ func executeDelete(
 		return err
 	}
 
-	if err := s.UpdateKeys(doc.ID, rec.Keys, nil); err != nil {
-		return err
-	}
-
-	return nil
+	return s.UpdateKeys(doc.ID, rec.Keys, nil)
 }
