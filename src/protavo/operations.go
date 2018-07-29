@@ -27,11 +27,11 @@ func FetchWhere(fn driver.FetchFunc, f ...filter.Condition) *driver.Fetch {
 
 // Save atomically creates or update a documents.
 //
-// The `Revision` field of the document must be equal to the revision of that
+// The Revision field of the document must be equal to the revision of that
 // document as currently persisted; otherwise, an OptimisticLockError is
 // returned.
 //
-// New documents must have a `Revision` of `0`.
+// New documents must have a revision of 0.
 //
 // doc is updated with its new revision and timestamp.
 func Save(doc *Document) *driver.Save {
@@ -53,12 +53,12 @@ func ForceSave(doc *Document) *driver.Save {
 
 // Delete removes a document.
 //
-// The `Revision` field of the document must be equal to the revision of that
+// The Revision field of the document must be equal to the revision of that
 // document as currently persisted; otherwise, an OptimisticLockError is
 // returned.
 //
 // It is not an error to delete a non-existent document, provided the given
-// `Revision` is `0`.
+// revision is 0.
 func Delete(doc *Document) *driver.Delete {
 	return &driver.Delete{
 		Document: doc,

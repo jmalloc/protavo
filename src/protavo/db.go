@@ -115,11 +115,11 @@ func (db *DB) FetchWhere(
 
 // Save atomically creates or updates multiple documents.
 //
-// The `Revision` field of each document must be equal to the revision of that
+// The Revision field of each document must be equal to the revision of that
 // document as currently persisted; otherwise, an OptimisticLockError is
 // returned.
 //
-// New documents must have a `Revision` of `0`.
+// New documents must have a revision of 0.
 //
 // Each document in docs is updated with its new revision and timestamp.
 func (db *DB) Save(ctx context.Context, docs ...*Document) error {
@@ -148,12 +148,12 @@ func (db *DB) ForceSave(ctx context.Context, docs ...*Document) error {
 
 // Delete atomically removes multiple documents.
 //
-// The `Revision` field of each document must be equal to the revision of that
+// The Revision field of each document must be equal to the revision of that
 // document as currently persisted; otherwise, an OptimisticLockError is
 // returned.
 //
 // It is not an error to delete a non-existent document, provided the given
-// `Revision` is `0`.
+// revision is 0.
 func (db *DB) Delete(ctx context.Context, docs ...*Document) error {
 	ops := make([]driver.WriteTxOp, len(docs))
 
