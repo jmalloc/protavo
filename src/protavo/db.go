@@ -9,6 +9,8 @@ import (
 )
 
 // DB is a Protocol Buffers based document store.
+//
+// TODO(jmalloc): Add efficient count operations.
 type DB struct {
 	ns string
 	d  driver.Driver
@@ -22,7 +24,7 @@ func NewDB(d driver.Driver) (*DB, error) {
 // Load returns the document with the given ID.
 //
 // It returns false if the document does not exist.
-func (db *DB) Load(ctx context.Context, id string) (*Document, bool, error) {
+func (db *DB) Load(ctx context.Context, id string) (*document.Document, bool, error) {
 	return db.LoadWhere(
 		ctx,
 		HasID(id),
@@ -30,7 +32,7 @@ func (db *DB) Load(ctx context.Context, id string) (*Document, bool, error) {
 }
 
 // LoadMany returns the documents with the given IDs.
-func (db *DB) LoadMany(ctx context.Context, ids ...string) ([]*Document, error) {
+func (db *DB) LoadMany(ctx context.Context, ids ...string) ([]*document.Document, error) {
 	return db.LoadManyWhere(
 		ctx,
 		HasID(ids...),
@@ -43,7 +45,7 @@ func (db *DB) LoadMany(ctx context.Context, ids ...string) ([]*Document, error) 
 func (db *DB) LoadByUniqueKey(
 	ctx context.Context,
 	u string,
-) (*Document, bool, error) {
+) (*document.Document, bool, error) {
 	return db.LoadWhere(
 		ctx,
 		HasUniqueKey(u),
@@ -57,8 +59,8 @@ func (db *DB) LoadByUniqueKey(
 func (db *DB) LoadWhere(
 	ctx context.Context,
 	f ...filter.Condition,
-) (*Document, bool, error) {
-	var doc *Document
+) (*document.Document, bool, error) {
+	var doc *document.Document
 
 	return doc, doc != nil, db.Read(
 		ctx,
@@ -73,8 +75,8 @@ func (db *DB) LoadWhere(
 }
 
 // LoadManyWhere returns the documents that match the given filter conditions.
-func (db *DB) LoadManyWhere(ctx context.Context, f ...filter.Condition) ([]*Document, error) {
-	var docs []*Document
+func (db *DB) LoadManyWhere(ctx context.Context, f ...filter.Condition) ([]*document.Document, error) {
+	var docs []*document.Document
 
 	return docs, db.Read(
 		ctx,
@@ -122,7 +124,7 @@ func (db *DB) FetchWhere(
 // New documents must have a revision of 0.
 //
 // Each document in docs is updated with its new revision and timestamp.
-func (db *DB) Save(ctx context.Context, docs ...*Document) error {
+func (db *DB) Save(ctx context.Context, docs ...*document.Document) error {
 	ops := make([]driver.WriteTxOp, len(docs))
 
 	for i, doc := range docs {
@@ -136,7 +138,7 @@ func (db *DB) Save(ctx context.Context, docs ...*Document) error {
 // the current revisions.
 //
 // Each document in docs is updated with its new revision and timestamp.
-func (db *DB) ForceSave(ctx context.Context, docs ...*Document) error {
+func (db *DB) ForceSave(ctx context.Context, docs ...*document.Document) error {
 	ops := make([]driver.WriteTxOp, len(docs))
 
 	for i, doc := range docs {
@@ -154,7 +156,7 @@ func (db *DB) ForceSave(ctx context.Context, docs ...*Document) error {
 //
 // It is not an error to delete a non-existent document, provided the given
 // revision is 0.
-func (db *DB) Delete(ctx context.Context, docs ...*Document) error {
+func (db *DB) Delete(ctx context.Context, docs ...*document.Document) error {
 	ops := make([]driver.WriteTxOp, len(docs))
 
 	for i, doc := range docs {
@@ -171,7 +173,7 @@ func (db *DB) Delete(ctx context.Context, docs ...*Document) error {
 // the deleted documents that did exist.
 func (db *DB) ForceDelete(
 	ctx context.Context,
-	docs ...*Document,
+	docs ...*document.Document,
 ) ([]string, error) {
 	ids := make([]string, len(docs))
 	for i, doc := range docs {

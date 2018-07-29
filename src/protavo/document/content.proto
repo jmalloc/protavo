@@ -1,0 +1,8 @@
+syntax = "proto3";
+
+package protavo.document;
+option go_package = "document";
+
+message StringContentType {
+    string value = 1;
+}

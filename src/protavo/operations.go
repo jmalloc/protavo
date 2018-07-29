@@ -1,6 +1,7 @@
 package protavo
 
 import (
+	"github.com/jmalloc/protavo/src/protavo/document"
 	"github.com/jmalloc/protavo/src/protavo/driver"
 	"github.com/jmalloc/protavo/src/protavo/filter"
 )
@@ -8,6 +9,9 @@ import (
 // FetchAll returns an operation that calls fn once for every document.
 //
 // It stops iterating if fn returns false or a non-nil error.
+//
+// The returned operation can be executed atomically with other operations using
+// DB.Read() or DB.Write().
 func FetchAll(fn driver.FetchFunc) *driver.Fetch {
 	return &driver.Fetch{
 		Each: fn,
@@ -18,6 +22,9 @@ func FetchAll(fn driver.FetchFunc) *driver.Fetch {
 // matches the given filter conditions.
 //
 // It stops iterating if fn returns false or a non-nil error.
+//
+// The returned operation can be executed atomically with other operations using
+// DB.Read() or DB.Write().
 func FetchWhere(fn driver.FetchFunc, f ...filter.Condition) *driver.Fetch {
 	return &driver.Fetch{
 		Each:   fn,
@@ -34,7 +41,10 @@ func FetchWhere(fn driver.FetchFunc, f ...filter.Condition) *driver.Fetch {
 // New documents must have a revision of 0.
 //
 // doc is updated with its new revision and timestamp.
-func Save(doc *Document) *driver.Save {
+//
+// The returned operation can be executed atomically with other operations using
+// DB.Write().
+func Save(doc *document.Document) *driver.Save {
 	return &driver.Save{
 		Document: doc,
 	}
@@ -44,7 +54,10 @@ func Save(doc *Document) *driver.Save {
 // checking the current revision.
 //
 // doc is updated with its new revision and timestamp.
-func ForceSave(doc *Document) *driver.Save {
+//
+// The returned operation can be executed atomically with other operations using
+// DB.Write().
+func ForceSave(doc *document.Document) *driver.Save {
 	return &driver.Save{
 		Document: doc,
 		Force:    true,
@@ -59,7 +72,10 @@ func ForceSave(doc *Document) *driver.Save {
 //
 // It is not an error to delete a non-existent document, provided the given
 // revision is 0.
-func Delete(doc *Document) *driver.Delete {
+//
+// The returned operation can be executed atomically with other operations using
+// DB.Write().
+func Delete(doc *document.Document) *driver.Delete {
 	return &driver.Delete{
 		Document: doc,
 	}
@@ -69,6 +85,9 @@ func Delete(doc *Document) *driver.Delete {
 // match the given filter conditions without checking the current revisions.
 //
 // If fn is non-nil, it is invoked for each of the deleted documents.
+//
+// The returned operation can be executed atomically with other operations using
+// DB.Write().
 func DeleteWhere(
 	fn driver.DeleteWhereFunc,
 	f ...filter.Condition,

@@ -7,6 +7,7 @@ import (
 	"path"
 
 	bolt "github.com/coreos/bbolt"
+	"github.com/jmalloc/protavo/src/protavo"
 	"github.com/jmalloc/protavo/src/protavo/driver"
 )
 
@@ -17,18 +18,29 @@ type ExclusiveDriver struct {
 	onClose func() error
 }
 
-// OpenExclusive returns a new ExclusiveDriver.
-func OpenExclusive(file string, mode os.FileMode, opts *bolt.Options) (*ExclusiveDriver, error) {
+// OpenExclusive returns a BoltDB-based database that is locked for exclusive
+// use by this process.
+func OpenExclusive(
+	file string,
+	mode os.FileMode,
+	opts *bolt.Options,
+) (*protavo.DB, error) {
 	db, err := bolt.Open(file, mode, opts)
 	if err != nil {
 		return nil, err
 	}
 
-	return &ExclusiveDriver{db, nil}, nil
+	return protavo.NewDB(
+		&ExclusiveDriver{db, nil},
+	)
 }
 
-// OpenTemp opens a new driver that operates on a temporary file.
-func OpenTemp(mode os.FileMode, opts *bolt.Options) (*ExclusiveDriver, error) {
+// OpenTemp returns a BoltDB-based database that uses a temporary file.
+// The file is deleted when the database is closed.
+func OpenTemp(
+	mode os.FileMode,
+	opts *bolt.Options,
+) (*protavo.DB, error) {
 	dir, err := ioutil.TempDir("", "protavobolt-")
 	if err != nil {
 		return nil, err
@@ -40,12 +52,14 @@ func OpenTemp(mode os.FileMode, opts *bolt.Options) (*ExclusiveDriver, error) {
 		return nil, err
 	}
 
-	return &ExclusiveDriver{
-		db,
-		func() error {
-			return os.RemoveAll(dir)
+	return protavo.NewDB(
+		&ExclusiveDriver{
+			db,
+			func() error {
+				return os.RemoveAll(dir)
+			},
 		},
-	}, nil
+	)
 }
 
 // BeginRead starts a new read-only transaction.
@@ -85,7 +99,7 @@ func (d *ExclusiveDriver) Close() error {
 		e := d.onClose()
 
 		// we always call onClose when it is present, even if Close() returned an
-		// error, but always favour returning the close error as it probably has more
+		// error, but always favor returning the close error as it probably has more
 		// important information.
 		if err == nil {
 			err = e

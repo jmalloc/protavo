@@ -1,7 +1,7 @@
 package protavobolt_test
 
 import (
-	"github.com/jmalloc/protavo/src/protavo/driver"
+	"github.com/jmalloc/protavo/src/protavo"
 	"github.com/jmalloc/protavo/src/protavo/driver/drivertest"
 	. "github.com/jmalloc/protavo/src/protavobolt"
 )
@@ -9,7 +9,7 @@ import (
 func init() {
 	drivertest.Describe(
 		"ExclusiveDriver",
-		func() (driver.Driver, error) {
+		func() (*protavo.DB, error) {
 			return OpenTemp(0600, nil)
 		},
 		nil,

@@ -6,7 +6,6 @@ import (
 
 	"github.com/jmalloc/protavo/src/protavo"
 	"github.com/jmalloc/protavo/src/protavo/document"
-	"github.com/jmalloc/protavo/src/protavo/driver"
 	g "github.com/onsi/ginkgo"
 	m "github.com/onsi/gomega"
 )
@@ -14,23 +13,17 @@ import (
 // describeFetchAll defines the standard test suite for the protavo.FetchAll()
 // operation.
 func describeFetchAll(
-	before func() (driver.Driver, error),
+	before func() (*protavo.DB, error),
 	after func(),
 ) {
 	ctx := context.Background()
 
 	g.Describe("fetch operation", func() {
-		var (
-			dr driver.Driver
-			db *protavo.DB
-		)
+		var db *protavo.DB
 
 		g.BeforeEach(func() {
 			var err error
-			dr, err = before()
-			m.Expect(err).ShouldNot(m.HaveOccurred())
-
-			db, err = protavo.NewDB(dr)
+			db, err = before()
 			m.Expect(err).ShouldNot(m.HaveOccurred())
 		})
 
@@ -57,18 +50,14 @@ func describeFetchAll(
 			var doc1, doc2 *document.Document
 
 			g.BeforeEach(func() {
-				doc1 = &protavo.Document{
-					ID: "doc-1",
-					Content: &TestContent{
-						Data: "<content-1>",
-					},
+				doc1 = &document.Document{
+					ID:      "doc-1",
+					Content: document.StringContent("<content-1>"),
 				}
 
-				doc2 = &protavo.Document{
-					ID: "doc-2",
-					Content: &TestContent{
-						Data: "<content-2>",
-					},
+				doc2 = &document.Document{
+					ID:      "doc-2",
+					Content: document.StringContent("<content-2>"),
 				}
 
 				err := db.Save(ctx, doc1, doc2)
