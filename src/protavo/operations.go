@@ -14,7 +14,8 @@ import (
 // It stops iterating if fn returns false or a non-nil error.
 //
 // The returned operation can be executed atomically with other operations using
-// DB.Read() or DB.Write().
+// DB.Read() or DB.Write(). DB.FetchAll() is a convenience method for performing
+// a single FetchAll operation.
 func FetchAll(fn driver.FetchFunc) driver.ReadOnlyOperation {
 	return &driver.Fetch{
 		Each: fn,
@@ -27,7 +28,8 @@ func FetchAll(fn driver.FetchFunc) driver.ReadOnlyOperation {
 // It stops iterating if fn returns false or a non-nil error.
 //
 // The returned operation can be executed atomically with other operations using
-// DB.Read() or DB.Write().
+// DB.Read() or DB.Write(). DB.FetchWhere() is a convenience method for
+// performing a single FetchWhere operation.
 func FetchWhere(fn driver.FetchFunc, f ...filter.Condition) driver.ReadOnlyOperation {
 	return &driver.Fetch{
 		Each:   fn,
@@ -46,7 +48,7 @@ func FetchWhere(fn driver.FetchFunc, f ...filter.Condition) driver.ReadOnlyOpera
 // doc is updated with its new revision and timestamp.
 //
 // The returned operation can be executed atomically with other operations using
-// DB.Write().
+// DB.Write(). DB.Save() is a convenience method for saving multiple documents.
 func Save(doc *document.Document) driver.Operation {
 	return &driver.Save{
 		Document: doc,
@@ -59,7 +61,8 @@ func Save(doc *document.Document) driver.Operation {
 // doc is updated with its new revision and timestamp.
 //
 // The returned operation can be executed atomically with other operations using
-// DB.Write().
+// DB.Write(). DB.ForceSave() is a convenience method for force-saving multiple
+// documents.
 func ForceSave(doc *document.Document) driver.Operation {
 	return &driver.Save{
 		Document: doc,
@@ -77,7 +80,8 @@ func ForceSave(doc *document.Document) driver.Operation {
 // revision is 0.
 //
 // The returned operation can be executed atomically with other operations using
-// DB.Write().
+// DB.Write(). DB.Delete() is a convenience method for deleting multiple
+// documents.
 func Delete(doc *document.Document) driver.Operation {
 	return &driver.Delete{
 		Document: doc,
@@ -90,7 +94,8 @@ func Delete(doc *document.Document) driver.Operation {
 // If fn is non-nil, it is invoked for each of the deleted documents.
 //
 // The returned operation can be executed atomically with other operations using
-// DB.Write().
+// DB.Write(). DB.DeleteWhere() is a convenience method for performing a single
+// DeleteWhere operation.
 func DeleteWhere(
 	fn driver.DeleteWhereFunc,
 	f ...filter.Condition,
