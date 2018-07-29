@@ -2,8 +2,7 @@ package filter
 
 // Visitor an interface for performing operations with filter conditions.
 type Visitor interface {
-	MatchDocumentID(*MatchDocumentID) error
-	MatchAllKeys(*MatchAllKeys) error
-	MatchUniqueKey(*MatchUniqueKey) error
-	MatchNothing(*MatchNothing) error
+	IsOneOf(*IsOneOf) (bool, error)
+	HasUniqueKeyIn(*HasUniqueKeyIn) (bool, error)
+	HasKeys(*HasKeys) (bool, error)
 }

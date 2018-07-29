@@ -38,7 +38,7 @@ func NewDB(d driver.Driver) (*DB, error) {
 func (db *DB) Load(ctx context.Context, id string) (*document.Document, bool, error) {
 	return db.LoadWhere(
 		ctx,
-		HasID(id),
+		IsOneOf(id),
 	)
 }
 
@@ -46,7 +46,7 @@ func (db *DB) Load(ctx context.Context, id string) (*document.Document, bool, er
 func (db *DB) LoadMany(ctx context.Context, ids ...string) ([]*document.Document, error) {
 	return db.LoadManyWhere(
 		ctx,
-		HasID(ids...),
+		IsOneOf(ids...),
 	)
 }
 
@@ -59,7 +59,7 @@ func (db *DB) LoadByUniqueKey(
 ) (*document.Document, bool, error) {
 	return db.LoadWhere(
 		ctx,
-		HasUniqueKey(u),
+		HasUniqueKeyIn(u),
 	)
 }
 
@@ -202,7 +202,7 @@ func (db *DB) ForceDelete(
 func (db *DB) DeleteByID(ctx context.Context, ids ...string) ([]string, error) {
 	return db.DeleteWhere(
 		ctx,
-		HasID(ids...),
+		IsOneOf(ids...),
 	)
 }
 
