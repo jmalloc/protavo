@@ -6,9 +6,6 @@ import (
 	"github.com/jmalloc/protavo/src/protavobolt/internal/database"
 )
 
-// TODO(jmalloc): provide optimized query plans that look for specific IDs and
-// keys first.
-
 type plan interface {
 	Fetch(fn driver.FetchFunc) error
 	DeleteWhere(fn driver.DeleteWhereFunc) error

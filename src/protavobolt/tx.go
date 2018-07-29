@@ -8,9 +8,6 @@ import (
 	"github.com/jmalloc/protavo/src/protavobolt/internal/database"
 )
 
-// TODO(jmalloc): put a 'now' timestamp in the transactions so operations in the
-// same tx share the same timestamp.
-
 // readTx is a BoltDB implementation of protavo.ReadTx.
 type readTx struct {
 	ns string

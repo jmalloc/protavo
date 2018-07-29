@@ -6,7 +6,6 @@ import (
 	"github.com/jmalloc/protavo/src/protavo/filter"
 )
 
-// TODO(jmalloc): Add efficient count operations.
 // TODO(jmalloc): Add examples for all operations.
 
 // FetchAll returns an operation that calls fn once for every document.
