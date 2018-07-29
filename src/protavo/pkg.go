@@ -1,2 +1,2 @@
-// Package protavo is an embedded document store.
+// Package protavo is an embedded, Protocol Buffers based document store.
 package protavo
