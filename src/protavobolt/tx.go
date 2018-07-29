@@ -9,6 +9,9 @@ import (
 )
 
 // readTx is a BoltDB implementation of protavo.ReadTx.
+//
+// TODO(jmalloc): put a 'now' timestamp in the tx so operations in the same tx
+// share the same timestamp.
 type readTx struct {
 	ns string
 	tx *bolt.Tx

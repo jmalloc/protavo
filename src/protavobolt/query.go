@@ -13,6 +13,9 @@ type plan interface {
 
 // planQuery returns the plan used to execute an operation that applies
 // to documents matching f.
+//
+// TODO(jmalloc): provide optimized query plans that look for specific IDs and
+// keys first.
 func planQuery(
 	s *database.Store,
 	f *filter.Filter,

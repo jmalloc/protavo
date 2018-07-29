@@ -5,15 +5,19 @@ import (
 	"github.com/jmalloc/protavo/src/protavo/filter"
 )
 
-// FetchAll invokes fn for every document in the store.
+// FetchAll returns an operation that calls fn once for every document.
+//
+// It stops iterating if fn returns false or a non-nil error.
 func FetchAll(fn driver.FetchFunc) *driver.Fetch {
 	return &driver.Fetch{
 		Each: fn,
 	}
 }
 
-// FetchWhere invokes fn for each document that matches the all of the given
-// filter conditions.
+// FetchWhere returns an operation that calls fn once for each document that
+// matches the given filter conditions.
+//
+// It stops iterating if fn returns false or a non-nil error.
 func FetchWhere(fn driver.FetchFunc, f ...filter.Condition) *driver.Fetch {
 	return &driver.Fetch{
 		Each:   fn,
@@ -21,18 +25,25 @@ func FetchWhere(fn driver.FetchFunc, f ...filter.Condition) *driver.Fetch {
 	}
 }
 
-// Save saves a document to the store, creating it if it does not already exist.
+// Save atomically creates or update a documents.
 //
-// The revision of the document must match the current revision of that document
-// in the store; otherwise, an OptimisticLockError is returned.
+// The `Revision` field of the document must be equal to the revision of that
+// document as currently persisted; otherwise, an OptimisticLockError is
+// returned.
+//
+// New documents must have a `Revision` of `0`.
+//
+// doc is updated with its new revision and timestamp.
 func Save(doc *Document) *driver.Save {
 	return &driver.Save{
 		Document: doc,
 	}
 }
 
-// ForceSave saves a document to the store without checking the current
-// revision.
+// ForceSave creates or updates a documents without checking the current
+// revisions.
+//
+// doc is updated with its new revision and timestamp.
 func ForceSave(doc *Document) *driver.Save {
 	return &driver.Save{
 		Document: doc,
@@ -40,23 +51,24 @@ func ForceSave(doc *Document) *driver.Save {
 	}
 }
 
-// Delete removes a document from the store.
+// Delete removes a document.
 //
-// The revision of the document must match the current revision of that document
-// in the store; otherwise, an OptimistcLockError is returned.
+// The `Revision` field of the document must be equal to the revision of that
+// document as currently persisted; otherwise, an OptimisticLockError is
+// returned.
 //
-// It is not an error to delete a document that does not exist, provided that
-// the given revision is zero.
+// It is not an error to delete a non-existent document, provided the given
+// `Revision` is `0`.
 func Delete(doc *Document) *driver.Delete {
 	return &driver.Delete{
 		Document: doc,
 	}
 }
 
-// DeleteWhere removes documents from the store without checking the
-// current document revisions.
+// DeleteWhere atomically removes the documents that match the given filter
+// conditions without checking the current revisions.
 //
-// It is not an error to delete a document that does not exist.
+// The operation result is the IDs of the deleted documents.
 func DeleteWhere(f ...filter.Condition) *driver.DeleteWhere {
 	return &driver.DeleteWhere{
 		Filter: filter.New(f),
