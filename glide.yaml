@@ -1,4 +1,4 @@
-package: github.com/jmalloc/protobolt
+package: github.com/jmalloc/protavo
 import:
 - package: github.com/coreos/bbolt
 - package: github.com/golang/protobuf

@@ -1,0 +1,8 @@
+syntax = "proto3";
+
+package protavo.drivertest;
+option go_package = "drivertest";
+
+message TestContent {
+    string data = 1;
+}

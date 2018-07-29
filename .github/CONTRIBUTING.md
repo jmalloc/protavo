@@ -1,6 +1,6 @@
 # Contributing
 
-**Protobolt** is open source software; contributions from the community are
+**Protavo** is open source software; contributions from the community are
 encouraged and appreciated. Please take a moment to read these guidelines
 before submitting changes.
 

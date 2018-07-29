@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package protavo.bolt;
+option go_package = "database";
+
+import "google/protobuf/any.proto";
+import "google/protobuf/timestamp.proto";
+
+// Record is the definitive record of a document's existence.
+message Record {
+    // revision is a 1-based document version number used to implement
+    // optimistic concurrency control.
+    uint64 revision = 1;
+
+    // keys is the set of indexing keys applied to the document. keys are used
+    // to quickly find a document or set of documents based on identifieres
+    // other than the document ID.
+    map<string, uint32> keys = 2;
+
+    // created_at is the time at which the document was created. The value is
+    // set automatically when the document is saved.
+    google.protobuf.Timestamp created_at = 3;
+
+    // updated_at is the time at which the document was last modified. The value
+    // is set automatically when the document is saved.
+    google.protobuf.Timestamp updated_at = 4;
+}
+
+// Content is container for a document's content.
+message Content {
+    // headers is an arbitrary set of key/value pairs that is persisted along
+    // with the document content.
+    map<string, string> headers = 1;
+
+    // content is the application-defined document content.
+    google.protobuf.Any content = 4;
+}
+
+// Key is an instance of a named key.
+message Key {
+    uint32 type = 1;
+    map<string, bool> documents = 2; // used as set<string>, bool value is always true
+}

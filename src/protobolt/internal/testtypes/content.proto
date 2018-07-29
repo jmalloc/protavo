@@ -1,8 +1,0 @@
-syntax = "proto3";
-
-package hive.x.protodb.testtypes;
-option go_package = "testtypes";
-
-message TestContent {
-    string data = 1;
-}
