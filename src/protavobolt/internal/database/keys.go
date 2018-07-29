@@ -116,3 +116,15 @@ func (s *Store) putKey(key string, k *Key) error {
 
 	return s.Keys.Put([]byte(key), buf)
 }
+
+// GetUniqueDocumentID returns the document ID that this unique key refers to.
+// It returns false if k is not a unique key, or it is empty.
+func (k *Key) GetUniqueDocumentID() (string, bool) {
+	if k.Type == UniqueKeyType {
+		for id := range k.Documents {
+			return id, true
+		}
+	}
+
+	return "", false
+}

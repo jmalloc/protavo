@@ -16,7 +16,7 @@ type Filter struct {
 
 // New returns a new filter with the given conditions.
 func New(conds []Condition) *Filter {
-	return optimize(&Filter{conds})
+	return &Filter{conds}
 }
 
 // IsSatisfiedBy returns true if doc meets this all of the conditions in the

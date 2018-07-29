@@ -20,20 +20,46 @@ func executeDeleteWhere(
 		return err
 	}
 
-	p, err := planQuery(s, f)
-	if err != nil {
+	return selectStrategy(s, f).DeleteWhere(fn)
+}
+
+// applyDelete executes the side-effects of a delete-where operation.
+func applyDelete(
+	s *database.Store,
+	id string,
+	rec *database.Record,
+	deleteRec bool,
+	fn driver.DeleteWhereFunc,
+) error {
+	if deleteRec {
+		if err := s.DeleteRecord(id); err != nil {
+			return err
+		}
+	}
+
+	if err := s.DeleteContent(id); err != nil {
 		return err
 	}
 
-	return p.DeleteWhere(fn)
+	if err := s.UpdateKeys(id, rec.Keys, nil); err != nil {
+		return err
+	}
+
+	if fn != nil {
+		return fn(id)
+	}
+
+	return nil
 }
 
+// DeleteWhere is the implementation of the "no-op" strategy for deleting.
 func (*noop) DeleteWhere(driver.DeleteWhereFunc) error {
 	return nil
 }
 
-func (p *scanRecords) DeleteWhere(fn driver.DeleteWhereFunc) error {
-	cur := p.store.Records.Cursor()
+// DeleteWhere is the implementation of the "scan records" strategy for deleting.
+func (qs *scanRecords) DeleteWhere(fn driver.DeleteWhereFunc) error {
+	cur := qs.store.Records.Cursor()
 
 	for k, v := cur.First(); k != nil; k, v = cur.Next() {
 		rec, err := database.UnmarshalRecord(v)
@@ -43,7 +69,7 @@ func (p *scanRecords) DeleteWhere(fn driver.DeleteWhereFunc) error {
 
 		id := string(k)
 
-		if !isFilterSatisfiedByRecord(p.filter, id, rec) {
+		if !isFilterSatisfiedByRecord(qs.filter, id, rec) {
 			continue
 		}
 
@@ -52,32 +78,93 @@ func (p *scanRecords) DeleteWhere(fn driver.DeleteWhereFunc) error {
 			return err
 		}
 
-		if err := p.store.DeleteContent(id); err != nil {
+		if err := applyDelete(qs.store, id, rec, false, fn); err != nil {
 			return err
-		}
-
-		if err := p.store.UpdateKeys(id, rec.Keys, nil); err != nil {
-			return err
-		}
-
-		if fn != nil {
-			if err := fn(id); err != nil {
-				return err
-			}
 		}
 	}
 
 	return nil
 }
 
-// func (p *getByID) DeleteWhere(driver.DeleteWhereFunc) error {
-// 	panic("ni")
-// }
+// DeleteWhere is the implementation of the "use document ID first" strategy for
+// deleting.
+func (qs *useIDFirst) DeleteWhere(fn driver.DeleteWhereFunc) error {
+	for id := range qs.conds.ExtractIsOneOf().Values {
+		rec, exists, err := qs.store.TryGetRecord(id)
+		if err != nil {
+			return err
+		}
 
-// func (p *getByUniqueKey) DeleteWhere(driver.DeleteWhereFunc) error {
-// 	panic("ni")
-// }
+		if !exists {
+			continue
+		}
 
-// func (p *getByKeys) DeleteWhere(driver.DeleteWhereFunc) error {
-// 	panic("ni")
-// }
+		if !qs.conds.AreSatisfiedBy(id, rec) {
+			continue
+		}
+
+		if err := applyDelete(qs.store, id, rec, true, fn); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// DeleteWhere is the implementation of the "use unique key first" strategy for
+// deleting.
+func (qs *useUniqueKeyFirst) DeleteWhere(fn driver.DeleteWhereFunc) error {
+	for key := range qs.conds.ExtractHasUniqueKeyIn().Values {
+		k, err := qs.store.GetKey(key)
+		if err != nil {
+			return err
+		}
+
+		id, ok := k.GetUniqueDocumentID()
+		if !ok {
+			continue
+		}
+
+		rec, err := qs.store.GetRecord(id)
+		if err != nil {
+			return err
+		}
+
+		if !qs.conds.AreSatisfiedBy(id, rec) {
+			continue
+
+		}
+
+		if err := applyDelete(qs.store, id, rec, true, fn); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// DeleteWhere is the implementation of the "use keys first" strategy for
+// deleting.
+func (qs *useKeysFirst) DeleteWhere(fn driver.DeleteWhereFunc) error {
+	ids, err := qs.findDocumentIDs()
+	if err != nil {
+		return err
+	}
+
+	for id := range ids {
+		rec, err := qs.store.GetRecord(id)
+		if err != nil {
+			return err
+		}
+
+		if !qs.conds.AreSatisfiedBy(id, rec) {
+			continue
+		}
+
+		if err := applyDelete(qs.store, id, rec, true, fn); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
