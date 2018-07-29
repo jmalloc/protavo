@@ -9,6 +9,19 @@ import (
 )
 
 // DB is a Protocol Buffers based document store.
+//
+// Most of the methods on *DB are convenience methods for performing
+// common tasks and single-operation transactions.
+//
+// Transactions can also be composed of multiple operations using DB.Read() or
+// DB.Write() and the core operation functions:
+//
+//	- FetchAll()
+//	- FetchWhere()
+//	- Save()
+//	- ForceSave()
+//	- Delete()
+//	- ForceDelete()
 type DB struct {
 	ns string
 	d  driver.Driver
@@ -237,6 +250,8 @@ func (db *DB) DeleteNamespace(ctx context.Context) error {
 }
 
 // Read atomically executes a set of read operations.
+//
+// The operations are executed in order.
 func (db *DB) Read(
 	ctx context.Context,
 	ops ...driver.ReadOnlyOperation,
@@ -259,6 +274,8 @@ func (db *DB) Read(
 }
 
 // Write atomically executes a set of read/write operations.
+//
+// The operations are executed in order.
 func (db *DB) Write(
 	ctx context.Context,
 	ops ...driver.Operation,
