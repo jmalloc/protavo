@@ -121,7 +121,6 @@ func selectStrategy(s *database.Store, f *filter.Filter) strategy {
 	if conds.HasKeysCondition != nil {
 		cost := len(conds.HasKeysCondition.Values)
 		if cost < cheapest {
-			cheapest = cost
 			qs = &useKeysFirst{s, conds}
 		}
 	}

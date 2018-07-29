@@ -1,5 +1,5 @@
-hash: 4a0c68e2427ece36ce1aa66502da9640dd2d84ccabe156aa4f3ef82ab956072f
-updated: 2018-07-26T11:11:44.195984933+10:00
+hash: af225cc4bb04a93f13b6516d341c4a1858b33084a19620b769dca305deb64601
+updated: 2018-07-30T06:59:53.194610001+10:00
 imports:
 - name: github.com/coreos/bbolt
   version: 583e8937c61f1af6513608ccc75c97b6abdf4ff9
@@ -11,11 +11,6 @@ imports:
   - ptypes/any
   - ptypes/duration
   - ptypes/timestamp
-- name: golang.org/x/sys
-  version: 151529c776cdc58ddbe7963ba9af779f3577b419
-  subpackages:
-  - unix
-testImports:
 - name: github.com/hpcloud/tail
   version: a1dbeea552b7c8df4b542c66073e393de198a800
   subpackages:
@@ -63,6 +58,10 @@ testImports:
   - html
   - html/atom
   - html/charset
+- name: golang.org/x/sys
+  version: 151529c776cdc58ddbe7963ba9af779f3577b419
+  subpackages:
+  - unix
 - name: golang.org/x/text
   version: 0605a8320aceb4207a5fb3521281e17ec2075476
   subpackages:
@@ -89,3 +88,4 @@ testImports:
   version: c131134a1947e9afd9cecfe11f4c6dff0732ae58
 - name: gopkg.in/yaml.v2
   version: 5420a8b6744d3b0345ab293f6fcba19c978f1183
+testImports: []

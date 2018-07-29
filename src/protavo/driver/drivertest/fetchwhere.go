@@ -10,15 +10,15 @@ import (
 	m "github.com/onsi/gomega"
 )
 
-// describeFetchAll defines the standard test suite for the protavo.FetchAll()
-// operation.
-func describeFetchAll(
+// describeFetchWhere defines the standard test suite for the
+// protavo.FetchWhere() operation.
+func describeFetchWhere(
 	before func() (*protavo.DB, error),
 	after func(),
 ) {
 	ctx := context.Background()
 
-	g.Describe("FetchAll", func() {
+	g.Describe("FetchWhere", func() {
 		var db *protavo.DB
 
 		g.BeforeEach(func() {
@@ -37,7 +37,7 @@ func describeFetchAll(
 
 		g.When("there are no documents in the database", func() {
 			g.It("does not return an error", func() {
-				op := protavo.FetchAll(
+				op := protavo.FetchWhere(
 					nil, // should never be invoked
 				)
 
@@ -47,25 +47,33 @@ func describeFetchAll(
 		})
 
 		g.When("there are documents in the database", func() {
-			var doc1, doc2 *document.Document
+			var doc1, doc2, doc3 *document.Document
 
 			g.BeforeEach(func() {
 				doc1 = &document.Document{
 					ID:      "doc-1",
 					Content: document.StringContent("<content-1>"),
+					Keys:    document.SharedKeys("foo"),
 				}
 
 				doc2 = &document.Document{
 					ID:      "doc-2",
 					Content: document.StringContent("<content-2>"),
+					Keys:    document.SharedKeys("foo", "bar"),
 				}
 
-				err := db.Save(ctx, doc1, doc2)
+				doc3 = &document.Document{
+					ID:      "doc-3",
+					Content: document.StringContent("<content-3>"),
+					Keys:    document.SharedKeys("bar"),
+				}
+
+				err := db.Save(ctx, doc1, doc2, doc3)
 				m.Expect(err).ShouldNot(m.HaveOccurred())
 			})
 
 			g.It("does not return an error", func() {
-				op := protavo.FetchAll(
+				op := protavo.FetchWhere(
 					func(*document.Document) (bool, error) {
 						return false, nil
 					},
@@ -75,24 +83,31 @@ func describeFetchAll(
 				m.Expect(err).ShouldNot(m.HaveOccurred())
 			})
 
-			g.It("calls the each-func with all of the documents in the store", func() {
-				docs := map[string]*document.Document{}
-
-				op := protavo.FetchAll(
-					func(doc *document.Document) (bool, error) {
-						docs[doc.ID] = doc
-						return true, nil
+			g.It("does not match any documents if called without conditions", func() {
+				op := protavo.FetchWhere(
+					func(*document.Document) (bool, error) {
+						return false, errors.New("unexpected document")
 					},
 				)
 
 				err := db.Read(ctx, op)
 				m.Expect(err).ShouldNot(m.HaveOccurred())
-				m.Expect(docs).To(m.HaveLen(2))
+			})
 
-				m.Expect(docs).To(m.HaveKey("doc-1"))
-				m.Expect(
-					docs["doc-1"].Equal(doc1),
-				).To(m.BeTrue())
+			g.It("calls the each-func with all of matching documents in the store", func() {
+				docs := map[string]*document.Document{}
+
+				op := protavo.FetchWhere(
+					func(doc *document.Document) (bool, error) {
+						docs[doc.ID] = doc
+						return true, nil
+					},
+					protavo.HasKeys("foo", "bar"),
+				)
+
+				err := db.Read(ctx, op)
+				m.Expect(err).ShouldNot(m.HaveOccurred())
+				m.Expect(docs).To(m.HaveLen(1))
 
 				m.Expect(docs).To(m.HaveKey("doc-2"))
 				m.Expect(
@@ -103,11 +118,12 @@ func describeFetchAll(
 			g.It("stops iterating if the each-func returns false", func() {
 				count := 0
 
-				op := protavo.FetchAll(
+				op := protavo.FetchWhere(
 					func(doc *document.Document) (bool, error) {
 						count++
 						return false, nil
 					},
+					protavo.HasKeys("foo"),
 				)
 
 				err := db.Read(ctx, op)
@@ -119,11 +135,12 @@ func describeFetchAll(
 				count := 0
 				expected := errors.New("<error>")
 
-				op := protavo.FetchAll(
+				op := protavo.FetchWhere(
 					func(doc *document.Document) (bool, error) {
 						count++
 						return false, expected
 					},
+					protavo.HasKeys("foo"),
 				)
 
 				err := db.Read(ctx, op)

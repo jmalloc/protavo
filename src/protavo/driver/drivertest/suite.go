@@ -10,4 +10,5 @@ func Describe(
 	after func(),
 ) {
 	describeFetchAll(before, after)
+	describeFetchWhere(before, after)
 }

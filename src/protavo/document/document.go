@@ -6,20 +6,6 @@ import (
 	"github.com/golang/protobuf/proto"
 )
 
-// KeyType is an enumeration of the different types of document keys.
-type KeyType int32
-
-const (
-	// UniqueKey is the KeyType for keys that are always exclusive to a single document.
-	// Uniqye keys are useful for addressing specific documents by some role they
-	// fill or property they hold.
-	UniqueKey KeyType = 1
-
-	// SharedKey is the KeyType for keys that may be shared by multiple documents.
-	// Shared keys are useful for quickly locating sets of related documents.
-	SharedKey KeyType = 2
-)
-
 // Document is a document stored in a DB.
 type Document struct {
 	// ID is the document's unique identifier. It can be any non-empty string.
@@ -33,7 +19,7 @@ type Document struct {
 	// Keys is the set of indexing keys applied to the document. Keys are used
 	// to quickly find a document or set of documents based on identifiers
 	// other than the document ID.
-	Keys map[string]KeyType
+	Keys KeyMap
 
 	// Headers is an arbitrary set of key/value pairs that is persisted along
 	// with the document content.
