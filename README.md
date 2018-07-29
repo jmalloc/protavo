@@ -1,6 +1,6 @@
 # Protavo
 
-[![Build Status](http://img.shields.io/travis/com/jmalloc/protavo/master.svg)](https://travis-ci.com/jmalloc/protavo)
+[![Build Status](http://img.shields.io/travis/jmalloc/protavo/master.svg)](https://travis-ci.org/jmalloc/protavo)
 [![Code Coverage](https://img.shields.io/codecov/c/github/jmalloc/protavo/master.svg)](https://codecov.io/github/jmalloc/protavo)
 [![Latest Version](https://img.shields.io/github/tag/jmalloc/protavo.svg?label=semver)](https://semver.org)
 [![GoDoc](https://godoc.org/github.com/jmalloc/protavo?status.svg)](https://godoc.org/github.com/jmalloc/protavo/src/protavo)
