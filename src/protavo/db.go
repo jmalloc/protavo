@@ -198,13 +198,18 @@ func (db *DB) DeleteByID(ctx context.Context, ids ...string) ([]string, error) {
 //
 // It returns the IDs of the deleted documents.
 func (db *DB) DeleteWhere(ctx context.Context, f ...filter.Condition) ([]string, error) {
-	op := DeleteWhere(f...)
+	var ids []string
 
-	if err := db.Write(ctx, op); err != nil {
-		return nil, err
-	}
-
-	return op.Result.Get()
+	return ids, db.Write(
+		ctx,
+		DeleteWhere(
+			func(id string) error {
+				ids = append(ids, id)
+				return nil
+			},
+			f...,
+		),
+	)
 }
 
 // Namespace returns a DB that operates on a sub-namespace of the current
@@ -243,7 +248,9 @@ func (db *DB) Read(
 	defer tx.Close()
 
 	for _, op := range ops {
-		if err := op.ExecuteInReadTx(ctx, tx); err != nil {
+		op.ExecuteInReadTx(ctx, tx)
+
+		if err := op.Err(); err != nil {
 			return err
 		}
 	}
@@ -263,7 +270,9 @@ func (db *DB) Write(
 	defer tx.Close()
 
 	for _, op := range ops {
-		if err := op.ExecuteInWriteTx(ctx, tx); err != nil {
+		op.ExecuteInWriteTx(ctx, tx)
+
+		if err := op.Err(); err != nil {
 			return err
 		}
 	}

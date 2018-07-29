@@ -15,18 +15,18 @@ type FetchFunc func(*document.Document) (bool, error)
 
 // Fetch is a request to retrieve documents from the store.
 type Fetch struct {
+	operation
+
 	Each   FetchFunc
 	Filter *filter.Filter
-	Result *Result
 }
 
 // ExecuteInReadTx executes this operation within the context of tx.
-func (o *Fetch) ExecuteInReadTx(ctx context.Context, tx ReadTx) error {
+func (o *Fetch) ExecuteInReadTx(ctx context.Context, tx ReadTx) {
 	tx.Fetch(ctx, o)
-	return o.Result.Err
 }
 
 // ExecuteInWriteTx executes this operation within the context of tx.
-func (o *Fetch) ExecuteInWriteTx(ctx context.Context, tx WriteTx) error {
-	return o.ExecuteInReadTx(ctx, tx)
+func (o *Fetch) ExecuteInWriteTx(ctx context.Context, tx WriteTx) {
+	o.ExecuteInReadTx(ctx, tx)
 }

@@ -68,8 +68,11 @@ func Delete(doc *Document) *driver.Delete {
 // DeleteWhere atomically removes the documents that match the given filter
 // conditions without checking the current revisions.
 //
-// The operation result is the IDs of the deleted documents.
-func DeleteWhere(f ...filter.Condition) *driver.DeleteWhere {
+// If fn is non-nil, it is invoked for each of the deleted documents.
+func DeleteWhere(
+	fn driver.DeleteWhereFunc,
+	f ...filter.Condition,
+) *driver.DeleteWhere {
 	return &driver.DeleteWhere{
 		Filter: filter.New(f),
 	}

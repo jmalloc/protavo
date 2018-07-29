@@ -8,13 +8,13 @@ import (
 
 // Save is a request to save a document.
 type Save struct {
+	operation
+
 	Document *document.Document
 	Force    bool
-	Result   *Result
 }
 
 // ExecuteInWriteTx executes this operation within the context of tx.
-func (o *Save) ExecuteInWriteTx(ctx context.Context, tx WriteTx) error {
+func (o *Save) ExecuteInWriteTx(ctx context.Context, tx WriteTx) {
 	tx.Save(ctx, o)
-	return o.Result.Err
 }

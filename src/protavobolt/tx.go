@@ -18,14 +18,14 @@ type readTx struct {
 }
 
 func (tx *readTx) Fetch(_ context.Context, op *driver.Fetch) {
-	op.Result = &driver.Result{
-		Err: executeFetch(
+	op.MarkExecuted(
+		executeFetch(
 			tx.tx,
 			tx.ns,
 			op.Filter,
 			op.Each,
 		),
-	}
+	)
 }
 
 func (tx *readTx) Close() error {
@@ -38,43 +38,44 @@ type writeTx struct {
 }
 
 func (tx *writeTx) Save(_ context.Context, op *driver.Save) {
-	op.Result = &driver.Result{
-		Err: executeSave(
+	op.MarkExecuted(
+		executeSave(
 			tx.tx,
 			tx.ns,
 			op.Document,
 			op.Force,
 		),
-	}
+	)
 }
 
 func (tx *writeTx) Delete(_ context.Context, op *driver.Delete) {
-	op.Result = &driver.Result{
-		Err: executeDelete(
+	op.MarkExecuted(
+		executeDelete(
 			tx.tx,
 			tx.ns,
 			op.Document,
 		),
-	}
+	)
 }
 
 func (tx *writeTx) DeleteWhere(_ context.Context, op *driver.DeleteWhere) {
-	ids, err := executeDeleteWhere(
-		tx.tx,
-		tx.ns,
-		op.Filter,
+	op.MarkExecuted(
+		executeDeleteWhere(
+			tx.tx,
+			tx.ns,
+			op.Filter,
+			op.Each,
+		),
 	)
-
-	op.Result = &driver.DeleteWhereResult{
-		DocumentIDs: ids,
-		Err:         err,
-	}
 }
 
 func (tx *writeTx) DeleteNamespace(_ context.Context, op *driver.DeleteNamespace) {
-	op.Result = &driver.Result{
-		Err: database.DeleteStore(tx.tx, tx.ns),
-	}
+	op.MarkExecuted(
+		database.DeleteStore(
+			tx.tx,
+			tx.ns,
+		),
+	)
 }
 
 func (tx *writeTx) Commit() error {

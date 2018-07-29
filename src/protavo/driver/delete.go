@@ -9,53 +9,45 @@ import (
 
 // Delete is a request to delete a document.
 type Delete struct {
+	operation
+
 	Document *document.Document
 	Result   *Result
 }
 
 // ExecuteInWriteTx executes this operation within the context of tx.
-func (o *Delete) ExecuteInWriteTx(ctx context.Context, tx WriteTx) error {
+func (o *Delete) ExecuteInWriteTx(ctx context.Context, tx WriteTx) {
 	tx.Delete(ctx, o)
-	return o.Result.Err
 }
+
+// DeleteWhereFunc is a function that is invoked for each document deleted in a
+// delete-where operation.
+//
+// The delete operation is aborted if it returns a non-nil error.
+type DeleteWhereFunc func(id string) error
 
 // DeleteWhere is a request to delete one or more documents, without checking the
 // current document revisions.
 type DeleteWhere struct {
+	operation
+
+	Each   DeleteWhereFunc
 	Filter *filter.Filter
-	Result *DeleteWhereResult
 }
 
 // ExecuteInWriteTx executes this operation within the context of tx.
-func (o *DeleteWhere) ExecuteInWriteTx(ctx context.Context, tx WriteTx) error {
+func (o *DeleteWhere) ExecuteInWriteTx(ctx context.Context, tx WriteTx) {
 	tx.DeleteWhere(ctx, o)
-	return o.Result.Err
-}
-
-// DeleteWhereResult is the result of a DeleteWhere operation.
-type DeleteWhereResult struct {
-	DocumentIDs []string
-	Err         error
-}
-
-// Get returns the result value and error.
-// It panics if the operation has not yet been executed.
-func (r *DeleteWhereResult) Get() ([]string, error) {
-	if r == nil {
-		panic("operation has not been executed")
-	}
-
-	return r.DocumentIDs, r.Err
 }
 
 // DeleteNamespace is a request to delete an entire namespace.
 type DeleteNamespace struct {
+	operation
+
 	Documents []*document.Document
-	Result    *Result
 }
 
 // ExecuteInWriteTx executes this operation within the context of tx.
-func (o *DeleteNamespace) ExecuteInWriteTx(ctx context.Context, tx WriteTx) error {
+func (o *DeleteNamespace) ExecuteInWriteTx(ctx context.Context, tx WriteTx) {
 	tx.DeleteNamespace(ctx, o)
-	return o.Result.Err
 }

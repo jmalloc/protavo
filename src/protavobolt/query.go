@@ -8,7 +8,7 @@ import (
 
 type plan interface {
 	Fetch(fn driver.FetchFunc) error
-	DeleteWhere() error
+	DeleteWhere(fn driver.DeleteWhereFunc) error
 }
 
 // planQuery returns the plan used to execute an operation that applies

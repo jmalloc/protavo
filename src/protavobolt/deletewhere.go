@@ -2,6 +2,7 @@ package protavobolt
 
 import (
 	bolt "github.com/coreos/bbolt"
+	"github.com/jmalloc/protavo/src/protavo/driver"
 	"github.com/jmalloc/protavo/src/protavo/filter"
 	"github.com/jmalloc/protavo/src/protavobolt/internal/database"
 )
@@ -12,15 +13,26 @@ func executeDeleteWhere(
 	tx *bolt.Tx,
 	ns string,
 	f *filter.Filter,
-) ([]string, error) {
-	panic("ni")
+	fn driver.DeleteWhereFunc,
+) error {
+	s, ok, err := database.OpenStore(tx, ns)
+	if !ok || err != nil {
+		return err
+	}
+
+	p, err := planQuery(s, f)
+	if err != nil {
+		return err
+	}
+
+	return p.DeleteWhere(fn)
 }
 
-func (*noop) DeleteWhere() error {
+func (*noop) DeleteWhere(driver.DeleteWhereFunc) error {
 	return nil
 }
 
-func (p *scanRecords) DeleteWhere() error {
+func (p *scanRecords) DeleteWhere(fn driver.DeleteWhereFunc) error {
 	cur := p.store.Records.Cursor()
 
 	for k, v := cur.First(); k != nil; k, v = cur.Next() {
@@ -59,6 +71,12 @@ func (p *scanRecords) DeleteWhere() error {
 
 		if err := p.store.UpdateKeys(id, rec.Keys, nil); err != nil {
 			return err
+		}
+
+		if fn != nil {
+			if err := fn(id); err != nil {
+				return err
+			}
 		}
 	}
 
