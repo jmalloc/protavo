@@ -16,7 +16,7 @@ func describeDelete(
 	after func(),
 ) {
 	ctx := context.Background()
-	var doc1 *document.Document
+	var doc1, doc2 *document.Document
 
 	g.Describe("Delete", func() {
 		var db *protavo.DB
@@ -32,6 +32,14 @@ func describeDelete(
 					"<unique-key>": document.UniqueKey,
 				},
 				Content: document.StringContent("<content-1>"),
+			}
+
+			doc2 = &document.Document{
+				ID: "doc-2",
+				Keys: document.Keys{
+					"<unique-key>": document.UniqueKey,
+				},
+				Content: document.StringContent("<content-2>"),
 			}
 		})
 
@@ -98,6 +106,16 @@ func describeDelete(
 					},
 				))
 			})
+		})
+
+		g.It("allows other documents to use the delete document's unique key", func() {
+			op := protavo.Delete(doc1)
+
+			err := db.Write(ctx, op)
+			m.Expect(err).ShouldNot(m.HaveOccurred())
+
+			err = db.Save(ctx, doc2)
+			m.Expect(err).ShouldNot(m.HaveOccurred())
 		})
 	})
 }
