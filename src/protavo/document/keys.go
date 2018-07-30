@@ -14,13 +14,13 @@ const (
 	SharedKey KeyType = 2
 )
 
-// KeyMap is a map of key name to type.
-type KeyMap map[string]KeyType
+// Keys is a map of key name to type.
+type Keys map[string]KeyType
 
-// UniqueKeys is a convenience function for creating a KeyMap consisting of a
+// UniqueKeys is a convenience function for creating a key-map consisting of a
 // set of unique keys.
-func UniqueKeys(keys ...string) KeyMap {
-	m := make(KeyMap, len(keys))
+func UniqueKeys(keys ...string) Keys {
+	m := make(Keys, len(keys))
 
 	for _, k := range keys {
 		m[k] = UniqueKey
@@ -29,10 +29,10 @@ func UniqueKeys(keys ...string) KeyMap {
 	return m
 }
 
-// SharedKeys is a convenience function for creating a KeyMap consisting of a
+// SharedKeys is a convenience function for creating a key-map consisting of a
 // set of shared keys.
-func SharedKeys(keys ...string) KeyMap {
-	m := make(KeyMap, len(keys))
+func SharedKeys(keys ...string) Keys {
+	m := make(Keys, len(keys))
 
 	for _, k := range keys {
 		m[k] = SharedKey

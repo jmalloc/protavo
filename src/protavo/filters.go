@@ -20,7 +20,7 @@ func HasUniqueKeyIn(keys ...string) filter.Condition {
 // HasKeys matches documents that have all of the given keys, regardless of key
 // type.
 //
-// Note that the parameters to this condition for a logical AND. That is, a
+// Note that the parameters to this condition form a logical AND. That is, a
 // document is required to have ALL of the keys in order to match.
 func HasKeys(keys ...string) filter.Condition {
 	return &filter.HasKeys{

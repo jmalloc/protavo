@@ -11,19 +11,22 @@ type Document struct {
 	// ID is the document's unique identifier. It can be any non-empty string.
 	ID string
 
+	// Keys is the set of indexing keys applied to the document. Keys are used
+	// to quickly find a document or set of documents based on identifiers
+	// other than the document ID.
+	Keys Keys
+
+	// Headers is an arbitrary set of key/value pairs that is persisted along
+	// with the document content.
+	Headers Headers
+
+	// Content is the application-defined document content.
+	Content proto.Message
+
 	// Revision is the version of the document as represented by this value.
 	// When modifying a document, it must be equal to the revision of the document
 	// that is currently persisted, otherwise an OptimisticLockError occurs.
 	Revision uint64
-
-	// Keys is the set of indexing keys applied to the document. Keys are used
-	// to quickly find a document or set of documents based on identifiers
-	// other than the document ID.
-	Keys KeyMap
-
-	// Headers is an arbitrary set of key/value pairs that is persisted along
-	// with the document content.
-	Headers map[string]string
 
 	// CreatedAt is the time at which the document was created. The value is
 	// set automatically when the document is saved for the first time.
@@ -32,9 +35,6 @@ type Document struct {
 	// UpdatedAt is the time at which the document was last modified. The value
 	// is set automatically when the document is saved.
 	UpdatedAt time.Time
-
-	// Content is the application-defined document content.
-	Content proto.Message
 }
 
 // UniqueKeys returns the document's unique indexing keys.

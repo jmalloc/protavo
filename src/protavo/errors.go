@@ -2,8 +2,9 @@ package protavo
 
 import "fmt"
 
-// OptimisticLockError is an error that occurs when attempt to modify a document
-// fails because the incorrect document revision was provided with the request.
+// OptimisticLockError is an error that occurs when an attempt to modify a
+// document fails because the incorrect document revision was provided with the
+// request.
 type OptimisticLockError struct {
 	DocumentID string
 	GivenRev   uint64
@@ -12,8 +13,17 @@ type OptimisticLockError struct {
 }
 
 func (e *OptimisticLockError) Error() string {
+	if e.ActualRev == 0 {
+		return fmt.Sprintf(
+			"cannot %s '%s', optimistic lock failure: given revision is %d but the document does not exist",
+			e.Operation,
+			e.DocumentID,
+			e.GivenRev,
+		)
+	}
+
 	return fmt.Sprintf(
-		"optimistic lock failure attempting to %s '%s', %d != %d",
+		"cannot %s '%s', optimistic lock failure: given revision (%d) does not match the current revision (%d)",
 		e.Operation,
 		e.DocumentID,
 		e.GivenRev,
@@ -28,7 +38,7 @@ func IsOptimisticLockError(err error) bool {
 	return ok
 }
 
-// DuplicateKeyError is an error that occurs when attempt is made to save a
+// DuplicateKeyError is an error that occurs when an attempt is made to save a
 // document with a unique key that is already used by a different document.
 type DuplicateKeyError struct {
 	DocumentID            string
@@ -40,8 +50,8 @@ func (e *DuplicateKeyError) Error() string {
 	return fmt.Sprintf(
 		"cannot save '%s', unique key '%s' conflicts with '%s'",
 		e.DocumentID,
-		e.ConflictingDocumentID,
 		e.UniqueKey,
+		e.ConflictingDocumentID,
 	)
 }
 

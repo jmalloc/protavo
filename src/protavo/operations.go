@@ -36,7 +36,7 @@ func FetchWhere(fn driver.FetchFunc, f ...filter.Condition) driver.ReadOnlyOpera
 	}
 }
 
-// Save returns an operation that creates or update a document.
+// Save returns an operation that creates or updates a document.
 //
 // The Revision field of the document must be equal to the revision of that
 // document as currently persisted; otherwise, an OptimisticLockError is
