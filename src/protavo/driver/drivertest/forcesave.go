@@ -10,16 +10,16 @@ import (
 	m "github.com/onsi/gomega"
 )
 
-// describeSave defines the standard test suite for the protavo.Save()
+// describeForceSave defines the standard test suite for the protavo.Save()
 // operation.
-func describeSave(
+func describeForceSave(
 	before func() (*protavo.DB, error),
 	after func(),
 ) {
 	ctx := context.Background()
 	var doc1, doc2 *document.Document
 
-	g.Describe("Save", func() {
+	g.Describe("ForceSave", func() {
 		var db *protavo.DB
 
 		g.BeforeEach(func() {
@@ -55,7 +55,7 @@ func describeSave(
 
 		g.When("creating a new document", func() {
 			g.It("persists the document faithfully", func() {
-				op := protavo.Save(doc1)
+				op := protavo.ForceSave(doc1)
 
 				err := db.Write(ctx, op)
 				m.Expect(err).ShouldNot(m.HaveOccurred())
@@ -70,7 +70,7 @@ func describeSave(
 			})
 
 			g.It("sets the revision and timestamps on the saved document", func() {
-				op := protavo.Save(doc1)
+				op := protavo.ForceSave(doc1)
 
 				err := db.Write(ctx, op)
 				m.Expect(err).ShouldNot(m.HaveOccurred())
@@ -84,19 +84,16 @@ func describeSave(
 				)
 			})
 
-			g.It("returns an error if the provided revision is not 0", func() {
+			g.It("persists the document, even if the revision is not 0", func() {
 				doc1.Revision = 123
-				op := protavo.Save(doc1)
+				op := protavo.ForceSave(doc1)
 
 				err := db.Write(ctx, op)
-				m.Expect(err).To(m.MatchError(
-					&protavo.OptimisticLockError{
-						DocumentID: "doc-1",
-						GivenRev:   123,
-						ActualRev:  0,
-						Operation:  "save",
-					},
-				))
+				m.Expect(err).ShouldNot(m.HaveOccurred())
+
+				_, ok, err := db.Load(ctx, "doc-1")
+				m.Expect(err).ShouldNot(m.HaveOccurred())
+				m.Expect(ok).To(m.BeTrue())
 			})
 		})
 
@@ -111,7 +108,7 @@ func describeSave(
 			})
 
 			g.It("persists the document faithfully", func() {
-				op := protavo.Save(doc1)
+				op := protavo.ForceSave(doc1)
 
 				err := db.Write(ctx, op)
 				m.Expect(err).ShouldNot(m.HaveOccurred())
@@ -128,7 +125,7 @@ func describeSave(
 			g.It("sets the revision and timestamps on the saved document", func() {
 				createdAt := doc1.CreatedAt
 
-				op := protavo.Save(doc1)
+				op := protavo.ForceSave(doc1)
 
 				err := db.Write(ctx, op)
 				m.Expect(err).ShouldNot(m.HaveOccurred())
@@ -142,30 +139,28 @@ func describeSave(
 				)
 			})
 
-			g.It("returns an error if the provided revision is not 1", func() {
+			g.It("does not return an error, even if the provided revision is not 1", func() {
 				doc1.Revision = 123
-				op := protavo.Save(doc1)
+				op := protavo.ForceSave(doc1)
 
 				err := db.Write(ctx, op)
-				m.Expect(err).To(m.MatchError(
-					&protavo.OptimisticLockError{
-						DocumentID: "doc-1",
-						GivenRev:   123,
-						ActualRev:  1,
-						Operation:  "save",
-					},
-				))
+				m.Expect(err).ShouldNot(m.HaveOccurred())
+
+				doc, ok, err := db.Load(ctx, "doc-1")
+				m.Expect(err).ShouldNot(m.HaveOccurred())
+				m.Expect(ok).To(m.BeTrue())
+				m.Expect(doc.Revision).To(m.Equal(uint64(2)))
 			})
 		})
 
 		g.It("aborts the save if a unique key conflicts with another document", func() {
-			op := protavo.Save(doc1)
+			op := protavo.ForceSave(doc1)
 
 			err := db.Write(ctx, op)
 			m.Expect(err).ShouldNot(m.HaveOccurred())
 
 			doc2.Keys = document.UniqueKeys("<unique-key>") // doc1 already has this key
-			op = protavo.Save(doc2)
+			op = protavo.ForceSave(doc2)
 
 			err = db.Write(ctx, op)
 			m.Expect(err).To(m.Equal(

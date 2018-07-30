@@ -12,4 +12,5 @@ func Describe(
 	describeFetchAll(before, after)
 	describeFetchWhere(before, after)
 	describeSave(before, after)
+	describeForceSave(before, after)
 }
