@@ -84,7 +84,7 @@ func describeSave(
 				)
 			})
 
-			g.It("returns an error if the provided revision is not 0", func() {
+			g.It("returns an error if the provided revision is not correct", func() {
 				doc1.Revision = 123
 				op := protavo.Save(doc1)
 
@@ -142,7 +142,7 @@ func describeSave(
 				)
 			})
 
-			g.It("returns an error if the provided revision is not 1", func() {
+			g.It("returns an error if the provided revision is not correct", func() {
 				doc1.Revision = 123
 				op := protavo.Save(doc1)
 

@@ -15,15 +15,24 @@ func executeDelete(
 	doc *document.Document,
 ) error {
 	s, ok, err := database.OpenStore(tx, ns)
-	if !ok || err != nil {
-		return err
-	}
-
-	rec, exists, err := s.TryGetRecord(doc.ID)
 	if err != nil {
 		return err
 	}
 
+	var (
+		rec    *database.Record
+		exists bool
+	)
+
+	// load the record even if namespace store does not exist ...
+	if ok {
+		rec, exists, err = s.TryGetRecord(doc.ID)
+		if err != nil {
+			return err
+		}
+	}
+
+	// ... but always check the revision
 	if doc.Revision != rec.GetRevision() {
 		return &protavo.OptimisticLockError{
 			DocumentID: doc.ID,

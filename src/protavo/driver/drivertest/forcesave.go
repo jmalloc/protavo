@@ -10,7 +10,7 @@ import (
 	m "github.com/onsi/gomega"
 )
 
-// describeForceSave defines the standard test suite for the protavo.Save()
+// describeForceSave defines the standard test suite for the protavo.ForceSave()
 // operation.
 func describeForceSave(
 	before func() (*protavo.DB, error),
@@ -84,7 +84,7 @@ func describeForceSave(
 				)
 			})
 
-			g.It("persists the document, even if the revision is not 0", func() {
+			g.It("persists the document, even if the provided revision is not correct", func() {
 				doc1.Revision = 123
 				op := protavo.ForceSave(doc1)
 
@@ -139,7 +139,7 @@ func describeForceSave(
 				)
 			})
 
-			g.It("does not return an error, even if the provided revision is not 1", func() {
+			g.It("does not return an error, even if the provided revision is not correct", func() {
 				doc1.Revision = 123
 				op := protavo.ForceSave(doc1)
 
