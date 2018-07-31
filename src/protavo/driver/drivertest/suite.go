@@ -1,6 +1,8 @@
 package drivertest
 
-import "github.com/jmalloc/protavo/src/protavo"
+import (
+	"github.com/jmalloc/protavo/src/protavo"
+)
 
 // Describe defines the standard test suite for an implementation of
 // protavo.Driver.
@@ -15,4 +17,6 @@ func Describe(
 	describeForceSave(before, after)
 	describeDelete(before, after)
 	describeDeleteWhere(before, after)
+
+	describeFilters(before, after)
 }
