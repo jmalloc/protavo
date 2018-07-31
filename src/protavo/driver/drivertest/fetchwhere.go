@@ -17,6 +17,7 @@ func describeFetchWhere(
 	after func(),
 ) {
 	ctx := context.Background()
+	var doc1, doc2, doc3 *document.Document
 
 	g.Describe("FetchWhere", func() {
 		var db *protavo.DB
@@ -25,6 +26,24 @@ func describeFetchWhere(
 			var err error
 			db, err = before()
 			m.Expect(err).ShouldNot(m.HaveOccurred())
+
+			doc1 = &document.Document{
+				ID:      "doc-1",
+				Content: document.StringContent("content-1"),
+				Keys:    document.SharedKeys("foo"),
+			}
+
+			doc2 = &document.Document{
+				ID:      "doc-2",
+				Content: document.StringContent("content-2"),
+				Keys:    document.SharedKeys("foo", "bar"),
+			}
+
+			doc3 = &document.Document{
+				ID:      "doc-3",
+				Content: document.StringContent("content-3"),
+				Keys:    document.SharedKeys("bar"),
+			}
 		})
 
 		g.AfterEach(func() {
@@ -47,27 +66,7 @@ func describeFetchWhere(
 		})
 
 		g.When("there are documents in the database", func() {
-			var doc1, doc2, doc3 *document.Document
-
 			g.BeforeEach(func() {
-				doc1 = &document.Document{
-					ID:      "doc-1",
-					Content: document.StringContent("<content-1>"),
-					Keys:    document.SharedKeys("foo"),
-				}
-
-				doc2 = &document.Document{
-					ID:      "doc-2",
-					Content: document.StringContent("<content-2>"),
-					Keys:    document.SharedKeys("foo", "bar"),
-				}
-
-				doc3 = &document.Document{
-					ID:      "doc-3",
-					Content: document.StringContent("<content-3>"),
-					Keys:    document.SharedKeys("bar"),
-				}
-
 				err := db.Save(ctx, doc1, doc2, doc3)
 				m.Expect(err).ShouldNot(m.HaveOccurred())
 			})
@@ -86,7 +85,7 @@ func describeFetchWhere(
 			g.It("does not match any documents if called without conditions", func() {
 				op := protavo.FetchWhere(
 					func(*document.Document) (bool, error) {
-						return false, errors.New("unexpected document")
+						return false, errors.New("each-func was called unexpectedly")
 					},
 				)
 
@@ -94,7 +93,7 @@ func describeFetchWhere(
 				m.Expect(err).ShouldNot(m.HaveOccurred())
 			})
 
-			g.It("calls the each-func with all of matching documents in the store", func() {
+			g.It("calls the each-func for each of the documents in the store", func() {
 				docs := map[string]*document.Document{}
 
 				op := protavo.FetchWhere(

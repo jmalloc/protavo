@@ -17,6 +17,7 @@ func describeFetchAll(
 	after func(),
 ) {
 	ctx := context.Background()
+	var doc1, doc2 *document.Document
 
 	g.Describe("FetchAll", func() {
 		var db *protavo.DB
@@ -25,6 +26,16 @@ func describeFetchAll(
 			var err error
 			db, err = before()
 			m.Expect(err).ShouldNot(m.HaveOccurred())
+
+			doc1 = &document.Document{
+				ID:      "doc-1",
+				Content: document.StringContent("content-1"),
+			}
+
+			doc2 = &document.Document{
+				ID:      "doc-2",
+				Content: document.StringContent("content-2"),
+			}
 		})
 
 		g.AfterEach(func() {
@@ -47,19 +58,7 @@ func describeFetchAll(
 		})
 
 		g.When("there are documents in the database", func() {
-			var doc1, doc2 *document.Document
-
 			g.BeforeEach(func() {
-				doc1 = &document.Document{
-					ID:      "doc-1",
-					Content: document.StringContent("<content-1>"),
-				}
-
-				doc2 = &document.Document{
-					ID:      "doc-2",
-					Content: document.StringContent("<content-2>"),
-				}
-
 				err := db.Save(ctx, doc1, doc2)
 				m.Expect(err).ShouldNot(m.HaveOccurred())
 			})
@@ -75,7 +74,7 @@ func describeFetchAll(
 				m.Expect(err).ShouldNot(m.HaveOccurred())
 			})
 
-			g.It("calls the each-func with all of the documents in the store", func() {
+			g.It("calls the each-func for each of the documents in the store", func() {
 				docs := map[string]*document.Document{}
 
 				op := protavo.FetchAll(

@@ -30,18 +30,18 @@ func describeSave(
 			doc1 = &document.Document{
 				ID: "doc-1",
 				Keys: document.Keys{
-					"<unique-key>": document.UniqueKey,
-					"<shared-key>": document.SharedKey,
+					"uniq": document.UniqueKey,
+					"shar": document.SharedKey,
 				},
 				Headers: document.Headers{
-					"<header-key>": "<header-value>",
+					"header-key": "header-value",
 				},
-				Content: document.StringContent("<content-1>"),
+				Content: document.StringContent("content-1"),
 			}
 
 			doc2 = &document.Document{
 				ID:      "doc-2",
-				Content: document.StringContent("<content-2>"),
+				Content: document.StringContent("content-2"),
 			}
 		})
 
@@ -106,8 +106,8 @@ func describeSave(
 				m.Expect(err).ShouldNot(m.HaveOccurred())
 
 				// modify the document headers and content
-				doc1.Headers["<header-key>"] = "<updated-header-value>"
-				doc1.Content = document.StringContent("<updated-content>")
+				doc1.Headers["header-key"] = "updated-header-value"
+				doc1.Content = document.StringContent("updated-content")
 			})
 
 			g.It("persists the document faithfully", func() {
@@ -164,7 +164,7 @@ func describeSave(
 			err := db.Write(ctx, op)
 			m.Expect(err).ShouldNot(m.HaveOccurred())
 
-			doc2.Keys = document.UniqueKeys("<unique-key>") // doc1 already has this key
+			doc2.Keys = document.UniqueKeys("uniq") // doc1 already has this key
 			op = protavo.Save(doc2)
 
 			err = db.Write(ctx, op)
@@ -172,7 +172,7 @@ func describeSave(
 				&protavo.DuplicateKeyError{
 					DocumentID:            "doc-2",
 					ConflictingDocumentID: "doc-1",
-					UniqueKey:             "<unique-key>",
+					UniqueKey:             "uniq",
 				},
 			))
 		})

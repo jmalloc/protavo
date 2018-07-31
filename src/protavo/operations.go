@@ -100,6 +100,7 @@ func DeleteWhere(
 	f ...filter.Condition,
 ) driver.Operation {
 	return &driver.DeleteWhere{
+		Each:   fn,
 		Filter: filter.New(f),
 	}
 }

@@ -27,19 +27,15 @@ func describeDelete(
 			m.Expect(err).ShouldNot(m.HaveOccurred())
 
 			doc1 = &document.Document{
-				ID: "doc-1",
-				Keys: document.Keys{
-					"<unique-key>": document.UniqueKey,
-				},
-				Content: document.StringContent("<content-1>"),
+				ID:      "doc-1",
+				Keys:    document.UniqueKeys("uniq"),
+				Content: document.StringContent("content-1"),
 			}
 
 			doc2 = &document.Document{
-				ID: "doc-2",
-				Keys: document.Keys{
-					"<unique-key>": document.UniqueKey,
-				},
-				Content: document.StringContent("<content-2>"),
+				ID:      "doc-2",
+				Keys:    document.UniqueKeys("uniq"),
+				Content: document.StringContent("content-2"),
 			}
 		})
 
@@ -82,6 +78,16 @@ func describeDelete(
 					},
 				))
 			})
+
+			g.It("allows other documents to use the deleted document's unique key", func() {
+				op := protavo.Delete(doc1)
+
+				err := db.Write(ctx, op)
+				m.Expect(err).ShouldNot(m.HaveOccurred())
+
+				err = db.Save(ctx, doc2)
+				m.Expect(err).ShouldNot(m.HaveOccurred())
+			})
 		})
 
 		g.When("the document does not exist", func() {
@@ -106,16 +112,6 @@ func describeDelete(
 					},
 				))
 			})
-		})
-
-		g.It("allows other documents to use the delete document's unique key", func() {
-			op := protavo.Delete(doc1)
-
-			err := db.Write(ctx, op)
-			m.Expect(err).ShouldNot(m.HaveOccurred())
-
-			err = db.Save(ctx, doc2)
-			m.Expect(err).ShouldNot(m.HaveOccurred())
 		})
 	})
 }

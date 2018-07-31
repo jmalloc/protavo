@@ -14,4 +14,5 @@ func Describe(
 	describeSave(before, after)
 	describeForceSave(before, after)
 	describeDelete(before, after)
+	describeDeleteWhere(before, after)
 }
