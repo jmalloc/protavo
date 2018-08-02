@@ -260,7 +260,7 @@ func (db *DB) Namespace(ns string) *DB {
 func (db *DB) DeleteNamespace(ctx context.Context) error {
 	return db.Write(
 		ctx,
-		&driver.DeleteNamespace{},
+		DeleteNamespace(),
 	)
 }
 

@@ -104,3 +104,9 @@ func DeleteWhere(
 		Filter: filter.New(f),
 	}
 }
+
+// DeleteNamespace returns an operation that deletes the namespace and all
+// documents within it.
+func DeleteNamespace() driver.Operation {
+	return &driver.DeleteNamespace{}
+}
