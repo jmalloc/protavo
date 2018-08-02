@@ -101,6 +101,21 @@ func (db *DB) LoadManyWhere(ctx context.Context, f ...filter.Condition) ([]*docu
 	)
 }
 
+// LoadAll returns all of the documents.
+func (db *DB) LoadAll(ctx context.Context, ids ...string) ([]*document.Document, error) {
+	var docs []*document.Document
+
+	return docs, db.Read(
+		ctx,
+		FetchAll(
+			func(d *document.Document) (bool, error) {
+				docs = append(docs, d)
+				return true, nil
+			},
+		),
+	)
+}
+
 // FetchAll calls fn once for every document.
 //
 // It stops iterating if fn returns false or a non-nil error.
