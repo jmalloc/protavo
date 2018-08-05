@@ -312,6 +312,22 @@ func (db *DB) Write(
 	return tx.Commit()
 }
 
+// BeginRead starts a new read-only transaction.
+//
+// This is a low-level interface to a transaction. Consider using DB.Read()
+// instead.
+func (db *DB) BeginRead(ctx context.Context) (driver.ReadTx, error) {
+	return db.d.BeginRead(ctx, db.ns)
+}
+
+// BeginWrite starts a new transaction.
+//
+// This is a low-level interface to a transaction. Consider using DB.Write()
+// instead.
+func (db *DB) BeginWrite(ctx context.Context) (driver.WriteTx, error) {
+	return db.d.BeginWrite(ctx, db.ns)
+}
+
 // Close closes the DB and the underlying driver, freeing resources and
 // preventing any further operations.
 func (db *DB) Close() error {
