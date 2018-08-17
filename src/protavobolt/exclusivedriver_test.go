@@ -8,7 +8,7 @@ import (
 
 func init() {
 	drivertest.Describe(
-		"ExclusiveDriver",
+		"protavobolt.ExclusiveDriver",
 		func() (*protavo.DB, error) {
 			return OpenTemp(0600, nil)
 		},

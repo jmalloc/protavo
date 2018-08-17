@@ -120,7 +120,6 @@ func DeleteStore(tx *bolt.Tx, ns string) error {
 		if parent == nil {
 			return nil
 		}
-
 		parts := splitNamespace(ns)
 		last := len(parts) - 1
 		name = []byte(parts[last])
@@ -133,7 +132,7 @@ func DeleteStore(tx *bolt.Tx, ns string) error {
 		}
 	}
 
-	err := tx.DeleteBucket(name)
+	err := parent.DeleteBucket(name)
 
 	if err == bolt.ErrBucketNotFound {
 		return nil
