@@ -17,6 +17,7 @@ func Describe(
 	describeForceSave(before, after)
 	describeDelete(before, after)
 	describeDeleteWhere(before, after)
+	describeDeleteNamespace(before, after)
 
 	describeFilters(before, after)
 }
